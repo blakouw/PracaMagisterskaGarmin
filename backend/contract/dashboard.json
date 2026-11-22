@@ -13,8 +13,8 @@
   "inputs": [
     "config/local_dashboard_ui_policy_v1.json",
     "config/dashboard_snapshot_api_policy_v1.json",
-    "data/pipeline/17_local_api_server/api_contract_schema.json",
-    "data/pipeline/17_local_api_server/api_quality_report.json",
+    "data/diagnostics/api/api_contract_schema.json",
+    "data/diagnostics/api/api_quality_report.json",
     "GET /api/v1/health",
     "GET /api/v1/snapshot/status",
     "GET /api/v1/dashboard/current-state",
@@ -24,15 +24,15 @@
     "POST /api/v1/dashboard/chat"
   ],
   "outputs": [
-    "pipeline/18_angular_dashboard_ui/app/",
-    "pipeline/18_angular_dashboard_ui/ui_contract_schema.json",
-    "data/pipeline/18_angular_dashboard_ui/ui_validation_report.json",
-    "data/pipeline/18_angular_dashboard_ui/ui_build_manifest.json",
-    "data/pipeline/18_angular_dashboard_ui/ui_quality_report.json",
-    "data/pipeline/18_angular_dashboard_ui/ui_lineage.json",
-    "data/pipeline/18_angular_dashboard_ui/run_manifest.json",
-    "data/pipeline/18_angular_dashboard_ui/run_log.txt",
-    "data/pipeline/18_angular_dashboard_ui/errors.json"
+    "frontend/",
+    "backend/contract/dashboard_ui_schema.json",
+    "data/diagnostics/frontend/ui_validation_report.json",
+    "data/diagnostics/frontend/ui_build_manifest.json",
+    "data/diagnostics/frontend/ui_quality_report.json",
+    "data/diagnostics/frontend/ui_lineage.json",
+    "data/diagnostics/frontend/run_manifest.json",
+    "data/diagnostics/frontend/run_log.txt",
+    "data/diagnostics/frontend/errors.json"
   ],
   "runtime": {
     "type": "local_web_frontend",
@@ -45,11 +45,11 @@
     "local_llm_chat_via_api": true,
     "browser_direct_llm_calls": false
   },
-  "run_command": "pipeline/18_angular_dashboard_ui/run.bat",
-  "build_command": "pipeline/18_angular_dashboard_ui/build.bat",
-  "artifact_directory": "data/pipeline/18_angular_dashboard_ui",
-  "test_directory": "tests/18_angular_dashboard_ui",
-  "visualization_directory": "visualization/18_angular_dashboard_ui",
+  "run_command": "scripts/dashboard.bat",
+  "build_command": "scripts/build_dashboard.bat",
+  "artifact_directory": "data/diagnostics/frontend",
+  "test_directory": "frontend/src",
+  "visualization_directory": "scripts/previews/dashboard",
   "prohibited_responsibilities": [
     "read_pipeline_files_directly_from_browser",
     "read_published_snapshot_files_directly_from_browser",

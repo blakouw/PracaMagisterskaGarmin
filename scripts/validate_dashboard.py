@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,21 +12,7 @@ MODULE_ID = "18_angular_dashboard_ui"
 MODULE_VERSION = "1.0.0"
 POLICY_VERSION = "local_dashboard_ui_policy_v1"
 SOURCE_API_MODULE = "17_local_api_server"
-REQUIRED_COMPONENTS = [
-    "AppStatusHeader",
-    "PrimaryPwsCard",
-    "OptionalAssistedPwsCard",
-    "ReadinessCard",
-    "PwsComponentsPanel",
-    "DeterministicWeightsPanel",
-    "LoadMetricsPanel",
-    "TimeSeriesPanel",
-    "PwsModelComparisonPanel",
-    "VariableTrendsPanel",
-    "PwsComponentInputsPanel",
-    "QualityCoveragePanel",
-    "DashboardChatPanel",
-]
+
 
 
 def now_iso() -> str:
@@ -33,7 +20,7 @@ def now_iso() -> str:
 
 
 def root_dir() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def read_json(path: Path) -> Any:
@@ -48,8 +35,8 @@ def write_json(path: Path, payload: Any) -> None:
 def collect_source_text(app_src: Path) -> str:
     texts: list[str] = []
     for path in app_src.rglob("*"):
-        if path.is_file() and path.suffix in {".ts", ".tsx", ".css", ".html"}:
-            if path.name.endswith(".test.tsx") or "test" in path.parts:
+        if path.is_file() and path.suffix in {".ts", ".css", ".html"}:
+            if path.name.endswith(".spec.ts") or "test" in path.parts:
                 continue
             texts.append(path.read_text(encoding="utf-8"))
     return "\n".join(texts)
@@ -57,10 +44,10 @@ def collect_source_text(app_src: Path) -> str:
 
 def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, str]]]:
     root = root_dir()
-    module_dir = root / "pipeline" / MODULE_ID
-    app_dir = module_dir / "app"
+    contract_dir = root / "backend" / "contract"
+    app_dir = root / "frontend"
     app_src = app_dir / "src"
-    artifact_dir = root / "data" / "pipeline" / MODULE_ID
+    artifact_dir = root / "data" / "diagnostics" / "frontend"
     errors: list[dict[str, str]] = []
 
     def error(code: str, message: str) -> None:
@@ -68,12 +55,13 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
 
     policy_path = root / "config" / "local_dashboard_ui_policy_v1.json"
     api_policy_path = root / "config" / "dashboard_snapshot_api_policy_v1.json"
-    api_schema_path = root / "data" / "pipeline" / SOURCE_API_MODULE / "api_contract_schema.json"
-    api_quality_path = root / "data" / "pipeline" / SOURCE_API_MODULE / "api_quality_report.json"
-    contract_path = module_dir / "contract.json"
-    vite_config_path = app_dir / "vite.config.ts"
+    api_schema_path = root / "data" / "diagnostics" / "api" / "api_contract_schema.json"
+    api_quality_path = root / "data" / "diagnostics" / "api" / "api_quality_report.json"
+    contract_path = contract_dir / "dashboard.json"
+    angular_path = app_dir / "angular.json"
+    proxy_path = app_dir / "proxy.conf.json"
     package_path = app_dir / "package.json"
-    schema_path = module_dir / "ui_contract_schema.json"
+    schema_path = contract_dir / "dashboard_ui_schema.json"
 
     for path, code in [
         (policy_path, "LOCAL_DASHBOARD_UI_POLICY_NOT_FOUND"),
@@ -81,7 +69,8 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
         (api_schema_path, "SOURCE_API_CONTRACT_NOT_FOUND"),
         (api_quality_path, "SOURCE_API_QUALITY_NOT_FOUND"),
         (contract_path, "UI_CONTRACT_NOT_FOUND"),
-        (vite_config_path, "FRONTEND_APP_NOT_FOUND"),
+        (angular_path, "FRONTEND_APP_NOT_FOUND"),
+        (proxy_path, "FRONTEND_APP_NOT_FOUND"),
         (package_path, "FRONTEND_APP_NOT_FOUND"),
         (schema_path, "UI_SCHEMA_NOT_FOUND"),
     ]:
@@ -89,20 +78,25 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
             error(code, f"Missing required file: {path.as_posix()}")
 
     policy = read_json(policy_path) if policy_path.is_file() else {}
-    contract = read_json(contract_path) if contract_path.is_file() else {}
-    api_schema = read_json(api_schema_path) if api_schema_path.is_file() else {}
-    api_quality = read_json(api_quality_path) if api_quality_path.is_file() else {}
-    vite_config = vite_config_path.read_text(encoding="utf-8") if vite_config_path.is_file() else ""
+    workspace = read_json(angular_path) if angular_path.is_file() else {}
+    proxy = read_json(proxy_path) if proxy_path.is_file() else {}
+    package = read_json(package_path) if package_path.is_file() else {}
+    schema = read_json(schema_path) if schema_path.is_file() else {}
     source_text = collect_source_text(app_src) if app_src.is_dir() else ""
 
-    required_module_files = ["README.md", "contract.json", "run.bat", "build.bat", "validate_ui_contract.py", "ui_contract_schema.json"]
-    missing_module_files = [name for name in required_module_files if not (module_dir / name).is_file()]
+    required_files = [
+        "frontend/README.md", "frontend/src/main.ts", "frontend/src/app.html",
+        "scripts/dashboard.bat", "scripts/build_dashboard.bat", "scripts/validate_dashboard.py",
+        "backend/contract/dashboard.json", "backend/contract/dashboard_ui_schema.json",
+    ]
+    missing_module_files = [name for name in required_files if not (root / name).is_file()]
     if missing_module_files:
         error("REQUIRED_MODULE_FILE_NOT_FOUND", f"Missing module files: {missing_module_files}")
 
     required_components_present = {}
-    for component in REQUIRED_COMPONENTS:
-        present = (app_src / "components" / f"{component}.tsx").is_file()
+    for component in schema.get("required_components", []):
+        filename = re.sub(r"(?<!^)(?=[A-Z])", "-", component).lower() + ".ts"
+        present = (app_src / "components" / filename).is_file()
         required_components_present[component] = present
         if not present:
             error("REQUIRED_COMPONENT_NOT_FOUND", component)
@@ -120,9 +114,27 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
     if not direct_snapshot_absent:
         error("DIRECT_SNAPSHOT_FILE_READ_PROHIBITED", "Frontend source references data/published.")
 
-    proxy_local = "http://127.0.0.1:8765" in vite_config and "'/api'" in vite_config and "0.0.0.0" not in vite_config
+    targets = workspace.get("projects", {}).get("dashboard", {}).get("architect", {})
+    serve = targets.get("serve", {})
+    serve_options = serve.get("options", {})
+    proxy_local = (
+        serve.get("builder") == "@angular/build:dev-server"
+        and serve_options.get("host") == "127.0.0.1"
+        and serve_options.get("port") == 5173
+        and serve_options.get("proxyConfig") == proxy_path.name
+        and set(proxy) == {"/api/**"}
+        and proxy["/api/**"].get("target") == "http://127.0.0.1:8765"
+    )
     if not proxy_local:
-        error("NON_LOCAL_API_PROXY_PROHIBITED", "Vite proxy must point to http://127.0.0.1:8765.")
+        error("NON_LOCAL_API_PROXY_PROHIBITED", "Angular CLI must serve locally and proxy /api to http://127.0.0.1:8765.")
+
+    dependencies = package.get("dependencies", {})
+    angular_stack = (
+        dependencies.get("@angular/core", "").lstrip("^~").startswith("22.")
+        and package.get("devDependencies", {}).get("@angular/cli", "").lstrip("^~").startswith("22.")
+        and "chart.js" in dependencies and "ng2-charts" in dependencies
+        and targets.get("build", {}).get("builder") == "@angular/build:application"
+    )
 
     lower_source = source_text.lower()
     disallowed_write_actions_absent = all(term not in lower_source for term in ["method: 'put'", 'method: "put"', "method: 'patch'", 'method: "patch"', "method: 'delete'", 'method: "delete"', "localstorage", "indexeddb"])
@@ -148,7 +160,8 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
     checks = {
         "required_module_files_present": not missing_module_files,
         "frontend_app_present": app_dir.is_dir() and package_path.is_file(),
-        "required_components_present": all(required_components_present.values()),
+        "required_components_present": bool(required_components_present) and all(required_components_present.values()),
+        "angular_22_chartjs_stack_present": angular_stack,
         "api_client_uses_relative_api_paths": relative_api_paths,
         "development_proxy_points_to_local_api": proxy_local,
         "direct_pipeline_file_reads_absent": direct_pipeline_absent,
@@ -199,12 +212,15 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
         "policy_version": POLICY_VERSION,
         "build_status": "built" if build_exit_code == 0 else "build_failed",
         "frontend_stack": {
-            "bundler": "vite",
-            "ui_library": "react",
+            "bundler": "angular_cli_esbuild",
+            "ui_library": "angular",
+            "angular_major": 22,
+            "charts": "chart.js",
+            "chart_integration": "ng2-charts",
             "language": "typescript",
         },
-        "source_directory": f"pipeline/{MODULE_ID}/app",
-        "build_directory": f"pipeline/{MODULE_ID}/app/dist",
+        "source_directory": "frontend",
+        "build_directory": "frontend/dist",
         "runtime": {
             "local_only": True,
             "api_proxy_used_in_development": True,
@@ -245,8 +261,8 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
             "primary_deterministic_pws_displayed": True,
             "optional_assisted_variant_separately_displayed": True,
             "null_values_preserved": True,
-            "partial_coverage_disclosure_present": "incomplete component set" in source_text,
-            "insufficient_coverage_state_present": "Insufficient component coverage" in source_text,
+            "partial_coverage_disclosure_present": "Wynik policzono z dopuszczalnego, ale niepełnego zestawu komponentów." in source_text,
+            "insufficient_coverage_state_present": "Niewystarczające pokrycie komponentów" in source_text,
         },
         "runtime_boundary": {
             "local_only": True,
@@ -287,11 +303,10 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
         "presentation_mapping": {
             "PrimaryPwsCard": "current_state.primary_pws",
             "OptionalAssistedPwsCard": "current_state.optional_assisted_pws",
-            "ReadinessCard": "current_state.readiness",
             "PwsComponentsPanel": "current_state.pws_components",
             "DeterministicWeightsPanel": "current_state.pws_weights",
             "LoadMetricsPanel": "current_state.load_metrics",
-            "TimeSeriesPanel": "dashboard.time_series_endpoint",
+            "PwsModelComparisonPanel": "dashboard.time_series_endpoint",
             "VariableTrendsPanel": "dashboard.time_series_endpoint.daily_signal_fields_and_dynamic_weights",
             "PwsComponentInputsPanel": "dashboard.time_series_endpoint.component_source_variables",
             "QualityCoveragePanel": "dashboard.quality_endpoint",
@@ -330,19 +345,19 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
         "inputs": [
             "config/local_dashboard_ui_policy_v1.json",
             "config/dashboard_snapshot_api_policy_v1.json",
-            f"data/pipeline/{SOURCE_API_MODULE}/api_contract_schema.json",
-            f"data/pipeline/{SOURCE_API_MODULE}/api_quality_report.json",
+            "data/diagnostics/api/api_contract_schema.json",
+            "data/diagnostics/api/api_quality_report.json",
         ],
         "generated_artifacts": [
-            f"pipeline/{MODULE_ID}/app/",
-            f"pipeline/{MODULE_ID}/ui_contract_schema.json",
-            f"data/pipeline/{MODULE_ID}/ui_validation_report.json",
-            f"data/pipeline/{MODULE_ID}/ui_build_manifest.json",
-            f"data/pipeline/{MODULE_ID}/ui_quality_report.json",
-            f"data/pipeline/{MODULE_ID}/ui_lineage.json",
-            f"data/pipeline/{MODULE_ID}/run_manifest.json",
-            f"data/pipeline/{MODULE_ID}/run_log.txt",
-            f"data/pipeline/{MODULE_ID}/errors.json",
+            "frontend/",
+            "backend/contract/dashboard_ui_schema.json",
+            "data/diagnostics/frontend/ui_validation_report.json",
+            "data/diagnostics/frontend/ui_build_manifest.json",
+            "data/diagnostics/frontend/ui_quality_report.json",
+            "data/diagnostics/frontend/ui_lineage.json",
+            "data/diagnostics/frontend/run_manifest.json",
+            "data/diagnostics/frontend/run_log.txt",
+            "data/diagnostics/frontend/errors.json",
         ],
         "runtime": {
             "local_only": True,
@@ -369,15 +384,15 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
             "garmin_token_pipeline_implemented": False,
             "public_deployment_configured": False,
         },
-        "log_file": f"data/pipeline/{MODULE_ID}/run_log.txt",
-        "errors_file": f"data/pipeline/{MODULE_ID}/errors.json",
+        "log_file": "data/diagnostics/frontend/run_log.txt",
+        "errors_file": "data/diagnostics/frontend/errors.json",
     }
 
     run_log = "\n".join([
         f"module_id={MODULE_ID}",
         f"policy_version={POLICY_VERSION}",
         f"started_at={started_at}",
-        "frontend_stack=vite/react/typescript",
+        "frontend_stack=angular_cli_esbuild/angular_22/typescript/chart.js/ng2-charts",
         "local_only=true",
         "read_only=true",
         "frontend_host=127.0.0.1",
@@ -385,7 +400,7 @@ def validate(build_exit_code: int, frontend_test_exit_code: int) -> tuple[dict[s
         "api_proxy_target=http://127.0.0.1:8765",
         "source_data=local_read_only_api_only",
         "direct_pipeline_or_snapshot_file_reads=false",
-        f"components={','.join(REQUIRED_COMPONENTS)}",
+        f"components={','.join(required_components_present)}",
         "deterministic_pws_is_primary=true",
         "optional_assisted_pws_is_secondary_variant=true",
         "coverage_disclosed=true",

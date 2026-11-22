@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from api_app import DEFAULT_HOST, DEFAULT_PORT, GET_ENDPOINTS, POST_ENDPOINTS, MODULE_ID, POLICY_VERSION, SnapshotContext, create_fastapi_app, load_snapshot
+from .api import DEFAULT_HOST, DEFAULT_PORT, GET_ENDPOINTS, POST_ENDPOINTS, MODULE_ID, POLICY_VERSION, SnapshotContext, create_fastapi_app, load_snapshot
 
 MODULE_VERSION = "1.0.0"
 
@@ -18,11 +18,11 @@ def now_iso() -> str:
 
 
 def root_dir() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def artifact_dir(root: Path) -> Path:
-    return root / "data" / "pipeline" / MODULE_ID
+    return root / "data" / "diagnostics" / "api"
 
 
 def write_json(path: Path, payload: Any) -> None:
@@ -141,7 +141,7 @@ def write_runtime_artifacts(root: Path, ctx: SnapshotContext, started_at: str, v
         "domain_status": domain_status,
         "runtime": {"local_only": True, "snapshot_read_only": True, "ephemeral_llm_chat_enabled": True, "host": DEFAULT_HOST, "port": ctx.port, "server_started": server_started},
         "inputs": ["config/dashboard_snapshot_api_policy_v1.json", "config/dashboard_snapshot_policy_v1.json", "data/published/dashboard_snapshots/current/dashboard_payload.json", "data/published/dashboard_snapshots/current/snapshot_manifest.json", "data/published/dashboard_snapshots/current/snapshot_status.json", "data/published/dashboard_snapshots/current/snapshot_source_hashes.json"],
-        "generated_artifacts": [f"data/pipeline/{MODULE_ID}/api_startup_validation.json", f"data/pipeline/{MODULE_ID}/api_contract_schema.json", f"data/pipeline/{MODULE_ID}/api_quality_report.json", f"data/pipeline/{MODULE_ID}/api_lineage.json", f"data/pipeline/{MODULE_ID}/run_manifest.json", f"data/pipeline/{MODULE_ID}/run_log.txt", f"data/pipeline/{MODULE_ID}/errors.json"],
+        "generated_artifacts": ["data/diagnostics/api/api_startup_validation.json", "data/diagnostics/api/api_contract_schema.json", "data/diagnostics/api/api_quality_report.json", "data/diagnostics/api/api_lineage.json", "data/diagnostics/api/run_manifest.json", "data/diagnostics/api/run_log.txt", "data/diagnostics/api/errors.json"],
         "snapshot_loaded": ctx.ready,
         "snapshot_id": ctx.snapshot_id,
         "analytical_values_recomputed": False,
@@ -151,8 +151,8 @@ def write_runtime_artifacts(root: Path, ctx: SnapshotContext, started_at: str, v
         "write_endpoints_implemented": False,
         "authentication_implemented": False,
         "frontend_implemented": False,
-        "log_file": f"data/pipeline/{MODULE_ID}/run_log.txt",
-        "errors_file": f"data/pipeline/{MODULE_ID}/errors.json",
+        "log_file": "data/diagnostics/api/run_log.txt",
+        "errors_file": "data/diagnostics/api/errors.json",
     })
     lines = [
         f"module_id={MODULE_ID}", f"policy_version={POLICY_VERSION}", f"execution_mode={execution_mode}", f"started_at={started_at}",

@@ -1,9 +1,7 @@
 @echo off
 setlocal
-set "SCRIPT_DIR=%~dp0"
-pushd "%SCRIPT_DIR%\..\.." >nul
-cd pipeline\18_angular_dashboard_ui\app
-npm.cmd run dev -- --host 127.0.0.1 --port 5173 %*
+pushd "%~dp0..\frontend" || exit /b 1
+call npm.cmd run dev -- %*
 set "EXIT_CODE=%ERRORLEVEL%"
-popd >nul
+popd
 exit /b %EXIT_CODE%

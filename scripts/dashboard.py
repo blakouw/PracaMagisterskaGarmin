@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from validate_ui_contract import main
+from validate_dashboard import main
 
 
 if __name__ == "__main__":

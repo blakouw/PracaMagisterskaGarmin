@@ -46,13 +46,14 @@
     "lan_exposure_approved": false
   },
   "stack_policy": {
-    "reuse_existing_frontend_stack_when_present": true,
-    "default_stack_when_absent": {
-      "bundler": "vite",
-      "ui_library": "react",
+    "required_stack": {
+      "bundler": "angular_cli_esbuild",
+      "ui_library": "angular",
+      "angular_major": 22,
       "language": "typescript",
-      "test_runner": "vitest",
-      "component_testing": "react_testing_library"
+      "charts": "chart.js",
+      "chart_integration": "ng2-charts",
+      "test_runner": "vitest"
     },
     "avoid_unnecessary_frameworks": true
   },
@@ -94,13 +95,14 @@
     "app_status_header",
     "primary_pws_card",
     "optional_assisted_pws_card",
-    "readiness_card",
     "pws_components_panel",
     "deterministic_weights_panel",
     "load_metrics_panel",
-    "time_series_panel",
     "pws_model_comparison_panel",
-    "quality_and_coverage_panel"
+    "variable_trends_panel",
+    "dashboard_chat_panel",
+    "quality_and_coverage_panel",
+    "pws_component_inputs_panel"
   ],
   "time_series_policy": {
     "data_source_endpoint": "/api/v1/dashboard/time-series",

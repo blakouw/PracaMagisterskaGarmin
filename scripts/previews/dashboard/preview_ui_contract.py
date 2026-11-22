@@ -6,12 +6,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-MODULE_ID = "18_angular_dashboard_ui"
-MISSING_MESSAGE = "Local dashboard UI artifacts do not exist. Run pipeline/18_angular_dashboard_ui/build.bat first."
+MISSING_MESSAGE = "Local dashboard UI artifacts do not exist. Run scripts/build_dashboard.bat first."
 
 
 def root_dir() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def read_json(path: Path) -> Any:
@@ -20,11 +19,11 @@ def read_json(path: Path) -> Any:
 
 def load_artifacts(root: Path) -> dict[str, Any]:
     artifacts = {
-        "schema": root / "pipeline" / MODULE_ID / "ui_contract_schema.json",
-        "validation": root / "data" / "pipeline" / MODULE_ID / "ui_validation_report.json",
-        "build": root / "data" / "pipeline" / MODULE_ID / "ui_build_manifest.json",
-        "quality": root / "data" / "pipeline" / MODULE_ID / "ui_quality_report.json",
-        "lineage": root / "data" / "pipeline" / MODULE_ID / "ui_lineage.json",
+        "schema": root / "backend" / "contract" / "dashboard_ui_schema.json",
+        "validation": root / "data" / "diagnostics" / "frontend" / "ui_validation_report.json",
+        "build": root / "data" / "diagnostics" / "frontend" / "ui_build_manifest.json",
+        "quality": root / "data" / "diagnostics" / "frontend" / "ui_quality_report.json",
+        "lineage": root / "data" / "diagnostics" / "frontend" / "ui_lineage.json",
     }
     if not all(path.is_file() for path in artifacts.values()):
         print(MISSING_MESSAGE)
