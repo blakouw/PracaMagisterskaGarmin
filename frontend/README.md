@@ -1,93 +1,47 @@
-# 18 Local Dashboard UI
+# Local Dashboard UI
 
-This module builds a local dashboard user interface consuming only the local dashboard API. It does not read pipeline or snapshot files directly and does not recompute analytical values. It also includes a local LLM chat panel that sends messages only to the approved localhost API chat endpoint.
+The dashboard renders the current published snapshot through the local API. It uses Angular 22, TypeScript, Angular CLI with an esbuild-based builder, and responsive Chart.js charts through ng2-charts.
 
-Deterministic PWS is always the primary displayed score. An optional validated LLM-assisted PWS may be displayed only as a separately labelled comparison variant and must never replace the deterministic score.
+Deterministic PWS is the primary displayed score. The local and OpenAI-assisted scores are separate comparisons. Missing values appear as unavailable, and partial component coverage is disclosed. Charts show the values returned by the API and their display units.
 
-Missing values remain unavailable and are displayed as missing data, never as numeric zero. Scores computed from partial eligible coverage must visibly disclose that limitation.
+## Run locally
 
-The frontend uses local same-origin API paths with a development proxy to the localhost API. It must not require wildcard CORS or expose private data outside the local machine.
+From the repository root, install the Python requirements and start the API:
 
-This module does not implement authentication, user profiles, Garmin token management, pipeline execution, direct browser-to-LLM calls, medical diagnoses, injury predictions, coaching messages or training prescriptions.
-
-## Purpose
-
-`18_angular_dashboard_ui` is the local presentation layer after `17_local_api_server`. It renders a single dashboard screen from read-only API endpoints and stays inside the modular pipeline folder structure.
-
-The module uses Vite, React and TypeScript because no previously implemented frontend stack exists in this repository. The existing module identifier and folder are preserved.
-
-## Inputs
-
-- `config/local_dashboard_ui_policy_v1.json`
-- `config/dashboard_snapshot_api_policy_v1.json`
-- `data/pipeline/17_local_api_server/api_contract_schema.json`
-- `data/pipeline/17_local_api_server/api_quality_report.json`
-- local API endpoints under `/api/v1`
-
-## Runtime
-
-The UI is local-only and read-only. In development, Vite serves the frontend on `127.0.0.1:5173` and proxies `/api` requests to `http://127.0.0.1:8765`.
-
-Run the API and UI in separate terminals:
-
-```bat
-pipeline\17_local_api_server\run.bat
-pipeline\18_angular_dashboard_ui\run.bat
+```powershell
+python -m pip install -r requirements.txt
+python -m backend.api_server
 ```
 
-Build and validate:
+In a second terminal, use a Node.js version supported by Angular 22, such as Node.js 24.15 or later in the 24.x line:
 
-```bat
-pipeline\18_angular_dashboard_ui\build.bat
+```powershell
+cd frontend
+npm ci
+npm run dev
 ```
 
-## Dashboard Sections
+Open `http://127.0.0.1:5173`. Angular CLI proxies `/api/**` to `http://127.0.0.1:8765`. The browser uses relative `/api/v1` URLs. The API loads the published snapshot at startup. Restart it after publishing a new snapshot.
 
-- app status header and snapshot status
-- primary deterministic PWS
-- optional assisted PWS as a separate variant
-- readiness
-- PWS components
-- deterministic weights
-- load metrics
-- time series
-- PWS model comparison over time: deterministic, local LLM and external OpenAI
-- daily signal charts for RHR, sleep, HRV, stress and activity HR when present in the API payload
-- separate dynamically scaled PWS component weight charts for deterministic, local LLM and OpenAI variants
-- clickable PWS component input-variable charts
-- quality and coverage
-- disclosures
-- local LLM snapshot chat
+From the repository root on Windows, `scripts\api_server.bat` and `scripts\dashboard.bat` provide the same launch commands.
 
-## Boundaries
+## Dashboard sections
 
-The UI does not start the API, run the pipeline, fetch Garmin data, call an LLM provider directly from the browser, edit weights, write settings, implement auth, implement profiles or manage Garmin tokens. The chat panel uses only POST /api/v1/dashboard/chat on localhost and does not modify snapshots. Public deployment is not approved in this module.
+- Current deterministic PWS, coverage, and the optional local assisted variant
+- PWS components, deterministic weights, and load metrics
+- PWS model comparisons with selectable dates and 7-, 30-, 90-day and full ranges
+- Toggleable daily signals, separate weight charts for the three variants, and component input trends
+- Data quality, missing components, and local snapshot chat
 
-The API loads one snapshot at startup; restart the local API after publishing a new snapshot.
+Changing the range requests the selected slice from the local time-series endpoint. The chat panel sends messages only to the local dashboard API.
 
-The signal and input-variable charts are presentation-only. They consume the `/api/v1/dashboard/time-series` payload and do not compute PWS, readiness, components or weights in the browser.
+## Build and test
 
-Each weight chart uses its own data-driven vertical domain and displays weights as percentages. Axis scaling changes presentation only and never changes source weight values.
+Run from `frontend/`:
 
-The PWS model comparison panel also uses only API payload fields. It preserves missing provider values as unavailable, labels the external model, and never promotes either assisted series over deterministic PWS.
-
-## Tests
-
-Python contract tests:
-
-```bat
-py -m pytest tests\18_angular_dashboard_ui -q
-```
-
-Frontend tests:
-
-```bat
-cd pipeline\18_angular_dashboard_ui\app
+```powershell
+npm run build
 npm test
 ```
 
-Visualization:
-
-```bat
-visualization\18_angular_dashboard_ui\run_visualization.bat
-```
+Angular CLI writes the production bundle to `frontend/dist/`. Serve it with access to the local API under the same origin. On Windows, `scripts\build_dashboard.bat` builds, tests, and runs the dashboard contract validator from the repository root. Run the Python tests for dashboard data from the repository root with `python -m pytest tests/dashboard_payload`.

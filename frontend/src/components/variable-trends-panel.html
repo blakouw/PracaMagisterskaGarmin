@@ -1,0 +1,45 @@
+<section class="card wide" aria-label="Trendy sygnałów dziennych">
+  <div class="card-heading">
+    <div>
+      <p class="eyebrow">Sygnały</p>
+      <h2>Dzienne zmienne zdrowia i aktywności</h2>
+    </div>
+  </div>
+  @if (availableDaily().length === 0) {
+    <p class="notice">Brak dziennych sygnałów w aktualnym payloadzie dashboardu.</p>
+  } @else {
+    <div class="series-toggles">
+      @for (series of availableDaily(); track series.sourceKey) {
+        <label>
+          <input
+            #toggle
+            type="checkbox"
+            [checked]="visible().has(series.sourceKey)"
+            (change)="toggleSeries(series.sourceKey, toggle.checked)"
+          >
+          {{ series.label }}
+        </label>
+      }
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-canvas">
+        <canvas baseChart type="line" [data]="dailyData()" [options]="dailyOptions" role="img" aria-label="Wykres sygnałów dziennych"></canvas>
+      </div>
+    </div>
+  }
+  @for (variant of weights(); track variant.label) {
+    <div class="subchart-block" [attr.aria-label]="variant.label">
+      <div class="card-heading compact"><h3>{{ variant.title }}</h3></div>
+      @if (variant.data; as data) {
+        <div class="chart-wrap compact-chart">
+          <div class="chart-canvas weight-chart-canvas">
+            <canvas baseChart type="line" [data]="data" [options]="variant.options" role="img" [attr.aria-label]="'Wykres: ' + variant.label"></canvas>
+          </div>
+        </div>
+      } @else {
+        <p class="notice">Brak historycznych wag dla tego wariantu w aktualnym zakresie.</p>
+      }
+      <p class="chart-scale-note">Oś pionowa dopasowuje się do widocznego zakresu wag i nie zmienia wartości źródłowych.</p>
+    </div>
+  }
+</section>

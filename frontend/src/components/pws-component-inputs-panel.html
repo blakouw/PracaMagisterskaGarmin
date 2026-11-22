@@ -1,0 +1,61 @@
+@let activeInput = active();
+@let series = activeInput.series;
+<section class="card wide component-inputs-panel" aria-label="Zmienne wejściowe komponentów PWS">
+  <div class="card-heading">
+    <div>
+      <p class="eyebrow">Wejścia PWS</p>
+      <h2>Zmienne źródłowe komponentów PWS</h2>
+    </div>
+  </div>
+  <div class="component-selector" role="group" aria-label="Komponenty PWS">
+    @for (component of keys; track component) {
+      <button
+        type="button"
+        [class.active]="selected() === component"
+        [attr.aria-pressed]="selected() === component"
+        (click)="selectComponent(component)"
+      >
+        <strong>{{ component }}</strong>
+        <span>{{ components[component].tabLabel }}</span>
+      </button>
+    }
+  </div>
+  <div class="component-input-detail">
+    <div>
+      <h3>{{ selected() }}: {{ selectedConfig().title }}</h3>
+      <p class="muted">{{ selectedConfig().summary }}</p>
+      <div class="input-variable-list" aria-label="Lista zmiennych komponentu">
+        @for (item of seriesList(); track item.series.chartKey) {
+          <button
+            type="button"
+            class="input-variable-item"
+            [class.active]="item.series.chartKey === series.chartKey"
+            [class.missing]="!item.available"
+            [attr.aria-pressed]="item.series.chartKey === series.chartKey"
+            (click)="selectedChartKey.set(item.series.chartKey)"
+          >
+            <span class="variable-name">{{ item.series.label }}</span>
+            <span class="variable-meta">{{ item.series.unit }} - {{ item.available ? 'dostępne' : 'brak danych' }}</span>
+            <span class="variable-source">{{ item.series.sourceKey }}</span>
+          </button>
+        }
+      </div>
+    </div>
+    <div class="chart-wrap compact-chart variable-chart-card">
+      <div class="variable-chart-heading">
+        <div>
+          <h3>Trend: {{ series.label }}</h3>
+          <p class="muted">{{ series.description }}</p>
+        </div>
+        <span>{{ series.unit }}</span>
+      </div>
+      @if (activeInput.available) {
+        <div class="chart-canvas input-chart-canvas">
+          <canvas baseChart type="line" [data]="chartData()" [options]="chartOptions()" role="img" [attr.aria-label]="'Trend: ' + series.label"></canvas>
+        </div>
+      } @else {
+        <p class="notice">Brak danych dla tej zmiennej w aktualnym payloadzie.</p>
+      }
+    </div>
+  </div>
+</section>

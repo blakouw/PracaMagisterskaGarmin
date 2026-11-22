@@ -1,88 +1,54 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import type {
   ApiHealthResponse,
+  DashboardChatRequest,
+  DashboardChatResponse,
   DashboardCurrentState,
   DashboardDisclosures,
   DashboardQualityAndCoverage,
   SnapshotStatus,
-  TimeSeriesResponse,
-  DashboardChatRequest,
-  DashboardChatResponse
+  TimeSeriesResponse
 } from './dashboardTypes';
 
-export class ApiError extends Error {
-  status: number;
-  payload: unknown;
+@Injectable({ providedIn: 'root' })
+export class DashboardApi {
+  private readonly http = inject(HttpClient);
 
-  constructor(message: string, status: number, payload: unknown) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.payload = payload;
+  fetchHealth(): Promise<ApiHealthResponse> {
+    return this.get<ApiHealthResponse>('/api/v1/health');
   }
-}
 
-async function requestJson<T>(path: string): Promise<T> {
-  const response = await fetch(path, { method: 'GET' });
-  let payload: unknown = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
+  fetchSnapshotStatus(): Promise<SnapshotStatus> {
+    return this.get<SnapshotStatus>('/api/v1/snapshot/status');
   }
-  if (!response.ok) {
-    throw new ApiError(`Request failed with HTTP ${response.status}`, response.status, payload);
+
+  fetchCurrentState(): Promise<DashboardCurrentState> {
+    return this.get<DashboardCurrentState>('/api/v1/dashboard/current-state');
   }
-  return payload as T;
-}
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  let payload: unknown = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
+  fetchTimeSeries(filters: { limit?: number | 'all'; date_from?: string; date_to?: string } = {}): Promise<TimeSeriesResponse> {
+    let params = new HttpParams();
+    if (filters.limit && filters.limit !== 'all') params = params.set('limit', filters.limit);
+    if (filters.date_from) params = params.set('date_from', filters.date_from);
+    if (filters.date_to) params = params.set('date_to', filters.date_to);
+    return this.get<TimeSeriesResponse>('/api/v1/dashboard/time-series', params);
   }
-  if (!response.ok) {
-    throw new ApiError(`Request failed with HTTP ${response.status}`, response.status, payload);
+
+  fetchQualityAndCoverage(): Promise<DashboardQualityAndCoverage> {
+    return this.get<DashboardQualityAndCoverage>('/api/v1/dashboard/quality');
   }
-  return payload as T;
-}
 
-export function fetchHealth(): Promise<ApiHealthResponse> {
-  return requestJson<ApiHealthResponse>('/api/v1/health');
-}
+  fetchDisclosures(): Promise<DashboardDisclosures> {
+    return this.get<DashboardDisclosures>('/api/v1/dashboard/disclosures');
+  }
 
-export function fetchSnapshotStatus(): Promise<SnapshotStatus> {
-  return requestJson<SnapshotStatus>('/api/v1/snapshot/status');
-}
+  sendDashboardChatMessage(payload: DashboardChatRequest): Promise<DashboardChatResponse> {
+    return firstValueFrom(this.http.post<DashboardChatResponse>('/api/v1/dashboard/chat', payload));
+  }
 
-export function fetchCurrentState(): Promise<DashboardCurrentState> {
-  return requestJson<DashboardCurrentState>('/api/v1/dashboard/current-state');
-}
-
-export function fetchTimeSeries(params?: { limit?: number | 'all'; date_from?: string; date_to?: string }): Promise<TimeSeriesResponse> {
-  const search = new URLSearchParams();
-  if (params?.limit && params.limit !== 'all') search.set('limit', String(params.limit));
-  if (params?.date_from) search.set('date_from', params.date_from);
-  if (params?.date_to) search.set('date_to', params.date_to);
-  const suffix = search.toString() ? `?${search.toString()}` : '';
-  return requestJson<TimeSeriesResponse>(`/api/v1/dashboard/time-series${suffix}`);
-}
-
-export function fetchQualityAndCoverage(): Promise<DashboardQualityAndCoverage> {
-  return requestJson<DashboardQualityAndCoverage>('/api/v1/dashboard/quality');
-}
-
-export function fetchDisclosures(): Promise<DashboardDisclosures> {
-  return requestJson<DashboardDisclosures>('/api/v1/dashboard/disclosures');
-}
-
-
-export function sendDashboardChatMessage(payload: DashboardChatRequest): Promise<DashboardChatResponse> {
-  return postJson<DashboardChatResponse>('/api/v1/dashboard/chat', payload);
+  private get<T>(path: string, params?: HttpParams): Promise<T> {
+    return firstValueFrom(this.http.get<T>(path, { params }));
+  }
 }

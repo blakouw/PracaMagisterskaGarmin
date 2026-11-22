@@ -435,7 +435,7 @@ h2 {
 
 @media (max-width: 860px) {
   .app-header, .hero-grid, .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .app-header {
@@ -447,11 +447,11 @@ h2 {
   }
 
   .component-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .metric-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .model-comparison .card-heading {
@@ -464,7 +464,7 @@ h2 {
   }
 
   .comparison-summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .comparison-summary > div {
@@ -713,34 +713,9 @@ h2 {
 @media (max-width: 860px) {
   .component-selector,
   .component-input-detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
-
-
-.recharts-cartesian-grid line {
-  stroke: #2f3d49;
-}
-
-.recharts-text,
-.recharts-legend-item-text,
-.recharts-tooltip-label {
-  fill: #b7c6d2;
-  color: #dce7ef !important;
-}
-
-.recharts-default-tooltip {
-  background: #111820 !important;
-  border: 1px solid #3a4b5a !important;
-  color: #dce7ef !important;
-}
-
-.card .recharts-surface {
-  background: rgba(12, 18, 24, 0.28);
-  border-radius: 0;
-}
-
-/* Visual identity: AGH base palette with saturated chart colors. */
 .card,
 .state-panel {
   background: var(--surface);
@@ -748,11 +723,13 @@ h2 {
   color: var(--agh-white);
 }
 
-.card:nth-of-type(odd) {
+.card {
   border-top-color: var(--agh-green);
 }
 
-.card:nth-of-type(even) {
+.card.secondary-card,
+app-deterministic-weights-panel > .card,
+app-variable-trends-panel > .card {
   border-top-color: var(--agh-red);
 }
 
@@ -869,28 +846,8 @@ h2 {
   color: #e32636;
 }
 
-.selectable-date-tick {
-  cursor: pointer;
-}
-
-.selectable-date-tick text {
-  fill: var(--muted);
-}
-
-.selectable-date-tick:hover text,
-.selectable-date-tick:focus text,
-.selectable-date-tick.selected text {
-  fill: var(--agh-white);
-  font-weight: 800;
-}
-
-.selectable-date-tick:focus {
-  outline: none;
-}
-
 .chat-message,
-.variable-chart-card,
-.card .recharts-surface {
+.variable-chart-card {
   background: var(--surface-strong);
 }
 
@@ -899,19 +856,68 @@ h2 {
   border-color: var(--agh-green);
 }
 
-.recharts-cartesian-grid line {
-  stroke: #505050;
+app-dashboard {
+  display: block;
 }
 
-.recharts-text,
-.recharts-legend-item-text,
-.recharts-tooltip-label {
-  fill: var(--muted);
-  color: var(--agh-white) !important;
+.dashboard-section {
+  display: contents;
 }
 
-.recharts-default-tooltip {
-  background: var(--surface-strong) !important;
-  border-color: var(--border) !important;
-  color: var(--agh-white) !important;
+.chart-canvas {
+  position: relative;
+  min-width: 0;
+  height: 320px;
+  background: var(--surface-strong);
+}
+
+.delta-chart-canvas {
+  height: 220px;
+}
+
+.weight-chart-canvas {
+  height: 280px;
+}
+
+.input-chart-canvas {
+  height: 300px;
+}
+
+.chart-date-marker {
+  position: absolute;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+.selectable-date-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.selectable-date-tick:hover,
+.selectable-date-tick:focus-visible,
+.selectable-date-tick.selected {
+  color: var(--agh-white);
+  font-weight: 800;
+}
+
+.chart-canvas canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.card code,
+.variable-source,
+.comparison-summary span {
+  overflow-wrap: anywhere;
 }

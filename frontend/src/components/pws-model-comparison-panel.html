@@ -1,0 +1,86 @@
+@let result = summary();
+@let selected = selectedRecord()?.date;
+
+<section class="card wide model-comparison" aria-label="Porównanie wariantów PWS w czasie">
+  <div class="card-heading">
+    <div>
+      <p class="eyebrow">Porównanie modeli</p>
+      <h2>Deterministyczny, lokalny LLM i model zewnętrzny</h2>
+    </div>
+    <div class="model-comparison-heading-actions">
+      <div class="segmented" role="group" aria-label="Zakres porównania modeli">
+        @for (option of options; track option) {
+          <button
+            type="button"
+            [class.active]="range() === option"
+            [attr.aria-pressed]="range() === option"
+            (click)="rangeChange.emit(option)"
+          >{{ option === 'all' ? 'Całość' : option + ' dni' }}</button>
+        }
+      </div>
+    </div>
+  </div>
+  @if (error(); as message) {
+    <p class="notice error-text">{{ message }}</p>
+  }
+
+  <p class="comparison-selected-date">Wyniki PWS: <strong>{{ formatDate(selected) }}</strong></p>
+  <div class="comparison-summary" aria-label="Wyniki wariantów PWS dla wybranego dnia">
+    <div>
+      <span>Deterministyczny PWS</span>
+      <strong>{{ formatScore(result.primary) }}</strong>
+      <small class="comparison-reference">Punkt odniesienia · 0 pkt</small>
+    </div>
+    <div>
+      <span>{{ result.localLabel }}</span>
+      <strong>{{ formatScore(result.local) }}</strong>
+      <small>{{ result.localDays }} dni z analizą</small>
+      <small class="comparison-delta local">Różnica: {{ formatDelta(result.localDelta) }}</small>
+    </div>
+    <div>
+      <span>{{ result.externalLabel }}</span>
+      <strong>{{ formatScore(result.external) }}</strong>
+      <small>{{ result.externalDays }} dni z analizą</small>
+      <small class="comparison-delta external">Różnica: {{ formatDelta(result.externalDelta) }}</small>
+    </div>
+  </div>
+  @if (result.external == null) {
+    <p class="notice">Wariant OpenAI nie jest dostępny dla wybranego dnia. Wykres zachowuje istniejące wartości historyczne i nie zastępuje ich zerami.</p>
+  }
+
+  <div class="chart-section-heading"><span>Wyniki PWS</span></div>
+  <div class="chart-wrap model-score-chart">
+    <div class="chart-canvas">
+      <canvas baseChart type="line" [data]="scoreData()" [options]="scoreOptions()" [plugins]="scorePlugins" role="img" aria-label="Wykres wyników PWS w czasie"></canvas>
+      @if (layout(); as position) {
+        @let markerPosition = marker();
+        @if (markerPosition !== null) {
+          <span class="chart-date-marker" [style.left.%]="markerPosition" [style.top.px]="position.plotTop" [style.height.px]="position.plotHeight"></span>
+        }
+        @for (tick of position.ticks; track tick.date) {
+          <button
+            type="button"
+            class="selectable-date-tick"
+            [class.selected]="tick.date === selected"
+            [style.left.%]="tick.position"
+            [style.top.px]="position.ticksTop"
+            [attr.aria-label]="'Pokaż wyniki PWS dla ' + tick.date"
+            [attr.aria-pressed]="tick.date === selected"
+            (click)="selectDate(tick.date)"
+          >{{ tick.date }}</button>
+        }
+      }
+    </div>
+  </div>
+  <p class="chart-scale-note">Skala pionowa jest zawężona do widocznych wyników, dzięki czemu niewielkie różnice pozostają czytelne.</p>
+
+  <div class="comparison-delta-section">
+    <div class="chart-section-heading"><span>Odchylenie od wyniku deterministycznego</span></div>
+    <div class="chart-wrap delta-chart-wrap">
+      <div class="chart-canvas delta-chart-canvas">
+        <canvas baseChart type="line" [data]="deltaData()" [options]="deltaOptions()" role="img" aria-label="Wykres odchyleń od deterministycznego PWS"></canvas>
+      </div>
+    </div>
+    <p class="chart-scale-note">Wartość dodatnia oznacza wynik modelu powyżej PWS deterministycznego, a ujemna – poniżej.</p>
+  </div>
+</section>

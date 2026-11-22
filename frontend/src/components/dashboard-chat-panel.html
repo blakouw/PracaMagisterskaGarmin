@@ -1,0 +1,27 @@
+<section class="card wide chat-panel" aria-label="Panel czatu dashboardu">
+  <div class="card-heading">
+    <div><h2>Czat o snapshocie</h2></div>
+  </div>
+  <div class="chat-log" aria-live="polite">
+    @for (message of messages(); track $index) {
+      <div class="chat-message" [class.assistant]="message.role === 'assistant'" [class.user]="message.role === 'user'">
+        <span>{{ message.role === 'assistant' ? 'Asystent' : 'Ty' }}</span>
+        <p>{{ message.content }}</p>
+      </div>
+    }
+  </div>
+  @if (error(); as message) {
+    <p class="notice error-banner">{{ message }}</p>
+  }
+  <form class="chat-input-row" (submit)="send($event)">
+    <input
+      #messageInput
+      [value]="draft()"
+      (input)="draft.set(messageInput.value)"
+      placeholder="Wpisz pytanie o dashboard"
+      aria-label="Pytanie o dashboard"
+      [disabled]="pending()"
+    >
+    <button type="submit" [disabled]="pending()">{{ pending() ? 'Wysyłanie' : 'Wyślij' }}</button>
+  </form>
+</section>

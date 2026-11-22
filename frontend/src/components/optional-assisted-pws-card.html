@@ -1,0 +1,55 @@
+@let data = assisted();
+@if (!data.available) {
+  <section class="card secondary-card" aria-label="Status PWS asystowanego przez LLM">
+    <p class="eyebrow">Wariant porównawczy</p>
+    <h2>{{ failed() ? 'LLM-assisted PWS niedostępny' : 'Brak wariantu asystowanego' }}</h2>
+    <p [class]="failed() ? 'notice error-banner' : 'muted'">{{ statusDescription() }}</p>
+    @if (data.llm_tool_execution?.attempted) {
+      <p class="muted">Zapis wyniku: {{ data.llm_tool_execution?.succeeded ? 'udany' : 'nieudany' }}</p>
+    }
+  </section>
+} @else {
+  <section class="card secondary-card" aria-label="Opcjonalny wariant PWS asystowany przez LLM">
+    <div class="card-heading">
+      <div><h2>PWS asystowany przez LLM</h2></div>
+    </div>
+    <p class="muted">Analiza PWS asystowana przez LLM jest gotowa.</p>
+    <div class="score-value secondary">{{ formatScore(data.score) }}</div>
+    <p class="score-label">{{ titleCase(data.label) }}</p>
+    <p class="muted">Różnica względem wyniku deterministycznego: {{ formatNumber(data.delta_from_deterministic, 2) }}</p>
+    <p class="notice">{{ disclosure() }}</p>
+    @if (data.validation_warnings; as warnings) {
+      @if (warnings.length) {
+        <details>
+          <summary>Ostrzeżenia walidacji ({{ warnings.length }})</summary>
+          <ul>
+            @for (warning of warnings; track $index) {
+              <li>{{ warning }}</li>
+            }
+          </ul>
+        </details>
+      }
+    }
+    @if (data.llm_reason_summary) {
+      <p class="muted">Uzasadnienie LLM: {{ data.llm_reason_summary }}</p>
+    }
+    @if (data.llm_tool_execution; as execution) {
+      <p class="muted">Zapis wyniku: {{ execution.succeeded ? 'udany' : 'nieudany' }}</p>
+    }
+    @for (section of weightSections(); track section.title) {
+      @if (section.values; as values) {
+        <details>
+          <summary>{{ section.title }}</summary>
+          <div class="metric-grid">
+            @for (entry of entries(values); track entry[0]) {
+              <span>{{ formatPwsComponentLabel(entry[0]) }}: {{ formatNumber(entry[1], 3) }}</span>
+            }
+          </div>
+        </details>
+      }
+    }
+    @if (data.conversation_log_path) {
+      <p class="muted">Log analizy dnia: <code>{{ data.conversation_log_path }}</code></p>
+    }
+  </section>
+}

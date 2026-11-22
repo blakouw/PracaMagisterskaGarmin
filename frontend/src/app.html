@@ -1,0 +1,40 @@
+@let state = view();
+
+@if (state.kind === 'loading') {
+  <app-loading-state></app-loading-state>
+} @else if (state.kind === 'error') {
+  <app-error-state [kind]="state.error" [detail]="state.detail"></app-error-state>
+} @else {
+  <main class="shell">
+    <app-status-header></app-status-header>
+    <section class="hero-grid">
+      <app-primary-pws-card [primary]="state.current.primary_pws"></app-primary-pws-card>
+      <app-optional-assisted-pws-card [assisted]="state.current.optional_assisted_pws"></app-optional-assisted-pws-card>
+    </section>
+    <section class="dashboard-grid">
+      <app-pws-components-panel [components]="state.current.pws_components"></app-pws-components-panel>
+      <app-deterministic-weights-panel [weights]="state.current.pws_weights"></app-deterministic-weights-panel>
+      <app-load-metrics-panel [metrics]="state.current.load_metrics"></app-load-metrics-panel>
+    </section>
+    <app-pws-model-comparison-panel
+      [records]="state.records"
+      [primary]="state.current.primary_pws"
+      [localAssisted]="state.current.optional_assisted_pws"
+      [externalAssisted]="state.current.external_assisted_pws"
+      [range]="state.range"
+      [error]="state.seriesError"
+      (rangeChange)="changeRange($event)"
+    ></app-pws-model-comparison-panel>
+    <app-variable-trends-panel [records]="state.records"></app-variable-trends-panel>
+    <app-dashboard-chat-panel [current]="state.current" [snapshotStatus]="state.status"></app-dashboard-chat-panel>
+    <section class="dashboard-grid">
+      <app-quality-coverage-panel
+        [coverage]="state.current.coverage"
+        [quality]="state.quality"
+        [error]="state.qualityError"
+        [disclosuresError]="state.disclosuresError"
+      ></app-quality-coverage-panel>
+    </section>
+    <app-pws-component-inputs-panel [records]="state.records"></app-pws-component-inputs-panel>
+  </main>
+}
