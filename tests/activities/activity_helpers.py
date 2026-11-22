@@ -1,14 +1,10 @@
-import importlib.util, json, shutil, sys, uuid, csv
+import csv
+import importlib.util
+import json
 from pathlib import Path
 import pytest
 ROOT=Path(__file__).resolve().parents[2]
-MODULE_PATH=ROOT/'pipeline'/'06_normalize_activities'/'main.py'
-@pytest.fixture
-def case_root():
-    root=ROOT/'.tmp_test'/'module06'/uuid.uuid4().hex
-    if root.exists(): shutil.rmtree(root)
-    root.mkdir(parents=True)
-    return root
+MODULE_PATH = ROOT / "data_processing/activities.py"
 @pytest.fixture
 def module06():
     spec=importlib.util.spec_from_file_location('normalize_activities', MODULE_PATH)
@@ -30,21 +26,5 @@ def write_activities_csv(root:Path, rows:list[dict]):
 def base_row(**kw):
     r={'activityId':'100','activityName':'Morning Run','activityType':'running','startTimeLocal':'2026-05-22T07:14:00','distance':'10240','duration':'3140','calories':'712','averageSpeed':'3.5','maxSpeed':'5.0','averageHR':'148','maxHR':'169','avgPower':'271','maxPower':'402','elevationGain':'96','elevationLoss':'94','hrTimeInZone1':'220','hrTimeInZone2':'680','hrTimeInZone3':'1180','hrTimeInZone4':'920','hrTimeInZone5':'140'}
     r.update(kw); return r
-def write_api(root:Path, aid='200', details=None, splits=None, fit=True, tcx=True):
-    base=root/'data'/'pipeline'/'04_garmin_activity_ingest'/'activities'/aid; base.mkdir(parents=True,exist_ok=True)
-    downloaded=[]
-    if details is not None:
-        (base/'details.json').write_text(json.dumps(details),encoding='utf-8'); downloaded.append({'artifact_type':'details_json','relative_path':f'data/pipeline/04_garmin_activity_ingest/activities/{aid}/details.json','status':'downloaded'})
-    if splits is not None:
-        (base/'splits.json').write_text(json.dumps(splits),encoding='utf-8'); downloaded.append({'artifact_type':'splits_json','relative_path':f'data/pipeline/04_garmin_activity_ingest/activities/{aid}/splits.json','status':'downloaded'})
-    if fit:
-        (base/'activity.fit').write_bytes(b'FIT'); downloaded.append({'artifact_type':'fit_file','relative_path':f'data/pipeline/04_garmin_activity_ingest/activities/{aid}/activity.fit','status':'downloaded'})
-    if tcx:
-        (base/'activity.tcx').write_text('<tcx/>',encoding='utf-8'); downloaded.append({'artifact_type':'tcx_file','relative_path':f'data/pipeline/04_garmin_activity_ingest/activities/{aid}/activity.tcx','status':'downloaded'})
-    (base/'download_manifest.json').write_text(json.dumps({'activity_id':aid,'status':'downloaded','downloaded_artifacts':downloaded}),encoding='utf-8')
-    manifest={'module_id':'04_garmin_activity_ingest','status':'completed','activities':[{'activity_id':aid,'status':'downloaded','manifest_path':f'data/pipeline/04_garmin_activity_ingest/activities/{aid}/download_manifest.json'}]}
-    (root/'data'/'pipeline'/'04_garmin_activity_ingest').mkdir(parents=True,exist_ok=True)
-    (root/'data'/'pipeline'/'04_garmin_activity_ingest'/'activity_ingest_manifest.json').write_text(json.dumps(manifest),encoding='utf-8')
 def run(module06, root): return module06.execute(root=root)
 def out(root): return root/'data'/'pipeline'/'06_normalize_activities'
-def success_fixture(root): copy_policy(root); write_activities_csv(root,[base_row()])

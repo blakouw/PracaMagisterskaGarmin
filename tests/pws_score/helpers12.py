@@ -8,7 +8,7 @@ from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODULE_PATH = PROJECT_ROOT / "pipeline/12_compute_pws_score/main.py"
+MODULE_PATH = PROJECT_ROOT / "algorithms/pws_score.py"
 
 
 def load_module():
@@ -84,38 +84,6 @@ def full_fixture_records():
     return [component_record("2026-01-01")], [weight_record("2026-01-01")]
 
 
-def partial_fixture_records():
-    components = [component_record("2026-01-01", lq=74.0, rec=70.0, cap=None, vs=83.0)]
-    weights = [weight_record(
-        "2026-01-01",
-        lq=74.0,
-        rec=70.0,
-        cap=None,
-        vs=83.0,
-        weights={"LQ": 0.236, "REC": 0.418, "CAP": 0.0, "VS": 0.346},
-        ready=True,
-        available=["LQ", "REC", "VS"],
-        missing=["CAP"],
-    )]
-    return components, weights
-
-
-def insufficient_fixture_records():
-    components = [component_record("2026-01-01", lq=81.0, rec=None, cap=None, vs=88.0)]
-    weights = [weight_record(
-        "2026-01-01",
-        lq=81.0,
-        rec=None,
-        cap=None,
-        vs=88.0,
-        weights=None,
-        ready=False,
-        available=["LQ", "VS"],
-        missing=["REC", "CAP"],
-    )]
-    return components, weights
-
-
 def setup_root(tmp_path: Path, components=None, weights=None, *, components_ready=True, weights_ready=True, policy=True) -> Path:
     root = tmp_path / "root"
     root.mkdir(parents=True)
@@ -150,7 +118,3 @@ def output(root: Path) -> Path:
 
 def first_record(root: Path) -> dict[str, Any]:
     return read_json(output(root))["records"][0]
-
-
-def errors(root: Path) -> dict[str, Any]:
-    return read_json(root / "data/pipeline/12_compute_pws_score/errors.json")

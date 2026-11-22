@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import sys
 import json
 from pathlib import Path
 from typing import Any
@@ -12,11 +11,10 @@ import pytest
 REAL_ROOT = Path(__file__).resolve().parents[2]
 MODULE_ID = "13_validate_llm_weight_influence"
 COMPONENTS = ["LQ", "REC", "CAP", "VS"]
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
 def load_module():
-    path = REAL_ROOT / "pipeline" / MODULE_ID / "main.py"
+    path = REAL_ROOT / "algorithms/llm_weight_validation.py"
     spec = importlib.util.spec_from_file_location("module13_main", path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
@@ -54,11 +52,10 @@ def fake_root(tmp_path: Path) -> Path:
         "data/local_context",
     ]:
         (root / rel).mkdir(parents=True, exist_ok=True)
-    for config_name in [
-        "llm_assisted_pws_policy_v1.json",
-        "llm_weight_adjustment_prompt_v1.json",
-    ]:
-        (root / "config" / config_name).write_text((REAL_ROOT / "config" / config_name).read_text(encoding="utf-8"), encoding="utf-8")
+    policy = "llm_assisted_pws_policy_v1.json"
+    prompt = "llm_weight_adjustment_prompt_v1.json"
+    (root / "config" / policy).write_bytes((REAL_ROOT / "config" / policy).read_bytes())
+    (root / "config" / prompt).write_bytes((REAL_ROOT / "ai_prompts" / prompt).read_bytes())
     (root / "config" / "llm_policy_v1.json").write_text(json.dumps({
         "provider": "openai",
         "model": "test-model",
@@ -163,29 +160,6 @@ def guardrails():
     }
 
 
-def read_output(root: Path, name="llm_assisted_pws.json"):
-    return json.loads((root / "data" / "pipeline" / MODULE_ID / name).read_text(encoding="utf-8"))
-
-
-def run_module(module13, root: Path, argv=None, fake=None, monkeypatch=None, api_key=True):
-    if monkeypatch is not None:
-        if api_key:
-            monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-        else:
-            monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    return module13.run(argv or [], injected_llm_client=fake, root=root)
-
-
 @pytest.fixture
 def no_adjustment(module13):
     return FakeLLM(module13, {"decision": "no_adjustment", "reason_summary": "No change.", "proposed_weight_deltas": {"LQ": 0.0, "REC": 0.0, "CAP": 0.0, "VS": 0.0}})
-
-
-@pytest.fixture
-def valid_adjustment(module13):
-    return FakeLLM(module13, {"decision": "propose_adjustment", "reason_summary": "Small bounded shift.", "proposed_weight_deltas": {"LQ": -0.01, "REC": 0.0, "CAP": 0.01, "VS": 0.0}})
-
-
-@pytest.fixture
-def invalid_json(module13):
-    return FakeLLM(module13, None, raw="not json", parse_error="not json")

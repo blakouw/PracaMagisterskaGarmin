@@ -1,18 +1,18 @@
 from activity_helpers import base_row, copy_policy, out, read_json, run, write_activities_csv
 
 
-def test_garmin_rpe_is_normalized_and_missing_value_stays_null(module06, case_root):
-    copy_policy(case_root)
+def test_garmin_rpe_is_normalized_and_missing_value_stays_null(module06, tmp_path):
+    copy_policy(tmp_path)
     write_activities_csv(
-        case_root,
+        tmp_path,
         [
             base_row(activityId="100", directWorkoutRpe="60", directWorkoutFeel="50"),
             base_row(activityId="101", directWorkoutRpe="", directWorkoutFeel=""),
         ],
     )
 
-    assert run(module06, case_root) == 0
-    records = read_json(out(case_root) / "activities_normalized.json")["activities"]
+    assert run(module06, tmp_path) == 0
+    records = read_json(out(tmp_path) / "activities_normalized.json")["activities"]
     by_id = {record["activity_id"]: record for record in records}
 
     assert by_id["100"]["perceived_effort_rpe"] == 6.0

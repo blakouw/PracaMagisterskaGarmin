@@ -2,20 +2,17 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 REAL_ROOT = Path(__file__).resolve().parents[2]
-MODULE_ID = "15_build_dashboard_payload"
 ASSISTED_ID = "13_validate_llm_weight_influence"
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
 def load_module():
-    path = REAL_ROOT / "pipeline" / MODULE_ID / "main.py"
+    path = REAL_ROOT / "backend/dashboard_payload.py"
     spec = importlib.util.spec_from_file_location("module15_main", path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
@@ -123,28 +120,3 @@ def pws_record(date, score, computed, label_id, label, tier, partial, available,
         "pws_label": label,
         "llm_adjustment_eligible": computed,
     }
-
-
-def write_assisted(root: Path, status="completed_assisted_score_computed", date="2026-01-03", computed=True):
-    record = {
-        "date": date,
-        "pws_deterministic": 75.34 if date == "2026-01-02" else 90.0,
-        "pws_llm_assisted": 89.9 if computed else None,
-        "pws_llm_assisted_computed": computed,
-        "pws_llm_assisted_label_id": "strong" if computed else None,
-        "pws_llm_assisted_label": "wysoki" if computed else None,
-        "pws_llm_assisted_delta_from_deterministic": -0.1 if computed else None,
-        "validated_llm_adjusted_weights": {"LQ": .19, "REC": .35, "CAP": .16, "VS": .3} if computed else None,
-        "llm_adjustment_applied": computed,
-    }
-    artifact(root, ASSISTED_ID, "llm_assisted_pws.json", {"module_id": ASSISTED_ID, "status": status, "ready_for_next_module": True, "record": record})
-    artifact(root, ASSISTED_ID, "llm_assisted_pws_quality_report.json", {"status": status, "ready_for_next_module": True})
-    artifact(root, ASSISTED_ID, "llm_validation_report.json", {"validation_status": "accepted" if computed and status == "completed_assisted_score_computed" else "not_applicable"})
-
-
-def read_output(root: Path, name="dashboard_payload.json"):
-    return json.loads((root / "data" / "pipeline" / MODULE_ID / name).read_text(encoding="utf-8"))
-
-
-def run_module(module15, root: Path):
-    return module15.build(root)[0]

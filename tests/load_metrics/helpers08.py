@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODULE_MAIN = PROJECT_ROOT / "pipeline/08_compute_load_metrics/main.py"
+MODULE_MAIN = PROJECT_ROOT / "algorithms/load_metrics.py"
 
 
 def load_module():
@@ -93,7 +93,3 @@ def output(root: Path, name: str = "load_metrics.json"):
 
 def load_output_records(root: Path):
     return read_json(output(root))["records"]
-
-
-def by_date(records, value):
-    return next(record for record in records if record["date"] == value)
