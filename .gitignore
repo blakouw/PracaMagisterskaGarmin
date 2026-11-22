@@ -1,24 +1,38 @@
-# Python bytecode/cache
+# Local Garmin data, exports and diagnostics
+/data/
+/your_data/
+garmin_activities/
+garmin_export_*.xlsx
+garmin_export_*.xlsx.manifest.json
+*.fit
+*.tcx
+*.parquet
+*.db
+*.sqlite
+*.sqlite3
+
+# Local credentials
+.env
+.env.*
+credentials*.json
+client_secret*.json
+*token*.json
+*oauth*.json
+tokenstore*
+*.pem
+*.key
+*.pfx
+*.p12
+.aws/
+
+# Python and test artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Virtual environments
 .venv/
 venv/
 env/
 ENV/
-
-# Temporary files and folders
-.tmp/
-.tmp_test/
-tmp/
-temp/
-*.tmp
-.tmp_agent*/
-agenttmp*/
-
-# Test/cache artifacts
 .pytest_cache/
 pytest-cache-files-*/
 .mypy_cache/
@@ -26,105 +40,37 @@ pytest-cache-files-*/
 .coverage
 .coverage.*
 htmlcov/
-
-# Logs
-*.log
-logs/
-data/pipeline/**/*.log
-data/pipeline/**/run_log.txt
-
-# Build/distribution artifacts
-build/
-!build/*.spec
-dist/
 *.egg-info/
 pip-wheel-metadata/
 
-# Frontend artifacts
-frontend/node_modules/
-frontend/.angular/cache/
-frontend/dist/
-frontend/coverage/
+# Build and packaging output
+node_modules/
+.angular/
+dist/
+build/
+coverage/
+_pyinstaller_dist/
+_pyinstaller_build/
+/release/windows/
+PersonalWellnessDashboard_1.0.0_portable*
 
-# Local/generated Garmin data
-garmin_activities/
-garmin_export_*.xlsx
-data/input/*.xlsx
-data/processed/
-data/trimmed_workbook/
-data/pipeline/01_find_input_workbook/
-data/pipeline/**/*.csv
-data/pipeline/**/*.parquet
-data/pipeline/**/*.db
-data/pipeline/**/*.sqlite
-data/pipeline/**/*.sqlite3
-data/raw/
-your_data/
+# Temporary files and logs
+.tmp*
+tmp/
+temp/
+agenttmp*/
+*.tmp
+*.log
+*.bak
+~$*
+logs/
 
-# Local secrets/databases
-data/local_secrets/*
-!data/local_secrets/README.md
-data/auth.db
-data/tokenstore_restore/
-data/garmin_tokens/
-**/tokenstore*
-**/*token*.json
-**/*oauth*.json
-.env
-.env.*
-
-# Keep public contract and policy configuration versioned
-!config/project_settings.json
-!config/pipeline_modules.json
-!config/pws_policy_v1.json
-!config/llm_policy_v1.json
-data/pipeline/02_read_xlsx_workbook/
-data/pipeline/03_trim_workbook/
-!config/garmin_trim_policy_v1.json
-
-data/local_secrets/garmin_tokenstore/
-oauth1_token.json
-oauth2_token.json
-data/pipeline/04_garmin_activity_ingest/
-*.fit
-*.tcx
-!config/garmin_activity_ingest_v1.json
-!requirements-garmin.txt
-
-data/pipeline/05_normalize_daily_records/
-!config/garmin_daily_normalization_v1.json
-data/pipeline/06_normalize_activities/
-!config/garmin_activity_normalization_v1.json
-
-data/pipeline/07_build_daily_features/
-!config/daily_features_policy_v1.json
-*.parquet
-data/pipeline/08_compute_load_metrics/
-!config/load_metrics_policy_v1.json
-data/pipeline/09_compute_readiness/
-!config/readiness_policy_v1.json
-data/pipeline/10_compute_pws_components/
-!config/pws_components_policy_v1.json
-data/pipeline/11_compute_pws_weights/
-!config/pws_weights_policy_v1.json
-data/pipeline/12_compute_pws_score/
-!config/pws_score_policy_v1.json
-data/local_context/
-data/pipeline/13_validate_llm_weight_influence/
-!config/llm_assisted_pws_policy_v1.json
-!config/llm_weight_adjustment_prompt_v1.json
-data/pipeline/15_build_dashboard_payload/
-!config/dashboard_payload_policy_v1.json
-data/pipeline/16_persist_local_snapshot/
-data/published/dashboard_snapshots/
-!config/dashboard_snapshot_policy_v1.json
-data/pipeline/17_local_api_server/
-!config/dashboard_snapshot_api_policy_v1.json
-data/pipeline/18_angular_dashboard_ui/
-pipeline/18_angular_dashboard_ui/app/node_modules/
-pipeline/18_angular_dashboard_ui/app/dist/
-pipeline/18_angular_dashboard_ui/app/coverage/
-!config/local_dashboard_ui_policy_v1.json
-data/pipeline/19_packaging_windows/
-release/windows/
-!config/windows_packaging_policy_v1.json
+# Thesis and workspace metadata
+/thesis/
+/thesisis/
+praca_magisterska_word*.docx
+/project_handoff/
+.codex/
+.agents/
+AGENTS.md
+MANIFEST.sha256
