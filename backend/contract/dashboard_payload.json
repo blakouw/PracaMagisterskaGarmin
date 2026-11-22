@@ -1,0 +1,78 @@
+{
+  "module_id": "15_build_dashboard_payload",
+  "module_name": "Build Dashboard Payload",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Builds a stable local dashboard presentation payload from existing analytical artifacts, preserving deterministic PWS as the primary score and exposing local and external validated LLM-assisted values only as separate optional comparison variants, without recomputing metrics or implementing API or UI.",
+  "depends_on": [
+    "00_project_contract",
+    "08_compute_load_metrics",
+    "09_compute_readiness",
+    "10_compute_pws_components",
+    "11_compute_pws_weights",
+    "12_compute_pws_score"
+  ],
+  "optional_inputs_from": [
+    "13_validate_llm_weight_influence"
+  ],
+  "inputs": [
+    "config/dashboard_payload_policy_v1.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_quality_report.json",
+    "data/pipeline/09_compute_readiness/readiness.json",
+    "data/pipeline/09_compute_readiness/readiness_quality_report.json",
+    "data/pipeline/10_compute_pws_components/pws_components.json",
+    "data/pipeline/10_compute_pws_components/pws_components_quality_report.json",
+    "data/pipeline/11_compute_pws_weights/pws_weights.json",
+    "data/pipeline/11_compute_pws_weights/pws_weights_quality_report.json",
+    "data/pipeline/12_compute_pws_score/pws_score.json",
+    "data/pipeline/12_compute_pws_score/pws_score_quality_report.json",
+    "optional: data/pipeline/13_validate_llm_weight_influence/llm_assisted_pws.json",
+    "optional: data/pipeline/13_validate_llm_weight_influence/llm_assisted_pws_quality_report.json",
+    "optional: data/pipeline/13_validate_llm_weight_influence/llm_validation_report.json"
+    ,"optional: data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws.json"
+    ,"optional: data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws_quality_report.json"
+  ],
+  "outputs": [
+    "data/pipeline/15_build_dashboard_payload/dashboard_payload.json",
+    "data/pipeline/15_build_dashboard_payload/dashboard_time_series.csv",
+    "optional: data/pipeline/15_build_dashboard_payload/dashboard_time_series.parquet",
+    "data/pipeline/15_build_dashboard_payload/dashboard_payload_schema.json",
+    "data/pipeline/15_build_dashboard_payload/dashboard_payload_quality_report.json",
+    "data/pipeline/15_build_dashboard_payload/dashboard_payload_lineage.json",
+    "data/pipeline/15_build_dashboard_payload/run_manifest.json",
+    "data/pipeline/15_build_dashboard_payload/run_log.txt",
+    "data/pipeline/15_build_dashboard_payload/errors.json"
+  ],
+  "run_command": "pipeline/15_build_dashboard_payload/run.bat",
+  "artifact_directory": "data/pipeline/15_build_dashboard_payload",
+  "test_directory": "tests/15_build_dashboard_payload",
+  "visualization_directory": "visualization/15_build_dashboard_payload",
+  "prohibited_responsibilities": [
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "recompute_pws_weights",
+    "recompute_pws_deterministic",
+    "recompute_pws_llm_assisted",
+    "call_llm",
+    "generate_coaching_message",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "implement_api_server",
+    "implement_authentication",
+    "implement_user_profile",
+    "implement_user_interface",
+    "download_garmin_data",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_derived_health_activity_training_and_wellness_presentation_data",
+  "notes": [
+    "Deterministic PWS is always the primary dashboard score.",
+    "Local and external LLM-assisted PWS values are optional and may be displayed only as separately labelled comparison variants when they exist and passed upstream validation.",
+    "This module aggregates and formats existing results only; it must not recompute analytical metrics.",
+    "Dashboard payload is private local data and must not be committed to version control."
+  ]
+}

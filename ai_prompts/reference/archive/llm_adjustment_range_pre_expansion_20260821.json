@@ -1,0 +1,25 @@
+{
+  "archive_version": "llm_adjustment_range_pre_expansion_20260821",
+  "preserved_at": "2026-08-21T00:00:00+00:00",
+  "previous_thresholds": {
+    "maximum_absolute_delta_per_component": 0.1,
+    "maximum_total_positive_weight_shift": 0.1,
+    "maximum_total_absolute_delta": 0.2
+  },
+  "active_thresholds_after_change": {
+    "maximum_absolute_delta_per_component": 0.2,
+    "maximum_total_positive_weight_shift": 0.2,
+    "maximum_total_absolute_delta": 0.4
+  },
+  "full_previous_prompt": "docs/llm_prompt_engineering/prompts/archive/llm_weight_adjustment_prompt_v1_pre_expanded_range_20260821.json",
+  "rollback_scope": [
+    "config/pws_weights_policy_v1.json",
+    "config/llm_assisted_pws_policy_v1.json",
+    "config/llm_policy_v1.json",
+    "config/llm_weight_adjustment_prompt_v1.json"
+  ],
+  "notes": [
+    "This archive contains public prompt and threshold configuration only.",
+    "Deterministic PWS behavior was not changed by the expanded LLM adjustment range."
+  ]
+}

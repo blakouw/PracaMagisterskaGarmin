@@ -1,0 +1,94 @@
+{
+  "policy_version": "windows_packaging_policy_v1",
+  "purpose": "Build a local portable Windows package for the already implemented read-only dashboard API and production dashboard UI without packaging private data, secrets, Garmin synchronization, LLM calls or public exposure.",
+  "package_type": "portable_windows_bundle",
+  "runtime": {
+    "local_only": true,
+    "host": "127.0.0.1",
+    "port": 8765,
+    "host_override_allowed": false,
+    "port_override_allowed": false,
+    "public_deployment_approved": false,
+    "lan_exposure_approved": false,
+    "serve_api_and_static_ui_from_single_local_process": true,
+    "vite_dev_server_allowed_in_packaged_runtime": false
+  },
+  "source_modules": {
+    "snapshot_publication": "16_persist_local_snapshot",
+    "local_api": "17_local_api_server",
+    "local_ui": "18_angular_dashboard_ui",
+    "windows_packaging": "19_packaging_windows"
+  },
+  "inputs": {
+    "api_entrypoint": "pipeline/17_local_api_server/api_app.py",
+    "api_policy": "config/dashboard_snapshot_api_policy_v1.json",
+    "snapshot_policy": "config/dashboard_snapshot_policy_v1.json",
+    "ui_build_script": "pipeline/18_angular_dashboard_ui/build.bat",
+    "ui_dist_directory": "pipeline/18_angular_dashboard_ui/app/dist",
+    "ui_contract": "pipeline/18_angular_dashboard_ui/ui_contract_schema.json"
+  },
+  "output": {
+    "release_root": "release/windows",
+    "package_directory_name": "PersonalWellnessDashboard_1.0.0_portable",
+    "zip_name": "PersonalWellnessDashboard_1.0.0_portable.zip",
+    "artifact_directory": "data/pipeline/19_packaging_windows"
+  },
+  "packaging_tool_policy": {
+    "preferred_tool": "pyinstaller",
+    "installer_builder": false,
+    "portable_executable_required": true,
+    "may_generate_source_fallback_when_pyinstaller_unavailable": false
+  },
+  "included_content_policy": {
+    "include_production_ui_build": true,
+    "include_vite_dev_server": false,
+    "include_local_readonly_api_runtime": true,
+    "include_public_runtime_policies": true,
+    "include_current_snapshot_data": false,
+    "include_placeholder_for_current_snapshot_directory": true,
+    "include_tokens_or_secrets": false,
+    "include_raw_garmin_exports": false,
+    "include_fit_or_tcx_files": false,
+    "include_pipeline_private_artifacts": false,
+    "include_llm_request_or_response_artifacts": false
+  },
+  "snapshot_runtime_policy": {
+    "snapshot_directory_relative_to_package": "data/published/dashboard_snapshots/current",
+    "current_snapshot_must_be_supplied_by_user_outside_binary": true,
+    "package_must_not_copy_existing_private_snapshot": true,
+    "api_reads_current_snapshot_only": true
+  },
+  "privacy_policy": {
+    "private_data_packaged": false,
+    "secrets_packaged": false,
+    "tokens_packaged": false,
+    "telemetry_enabled": false,
+    "external_tracking_enabled": false,
+    "crash_reporting_to_external_service_enabled": false
+  },
+  "prohibited_responsibilities": [
+    "create_installer",
+    "auto_update_application",
+    "public_deployment",
+    "lan_exposure",
+    "implement_authentication",
+    "implement_user_profile",
+    "implement_garmin_token_pipeline",
+    "run_full_pipeline",
+    "sync_garmin_data",
+    "call_llm",
+    "generate_coaching_message",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "package_private_snapshots",
+    "package_tokens_or_secrets"
+  ],
+  "limitations": [
+    "The package is a local portable runtime for an already published dashboard snapshot.",
+    "The package does not include private user data or snapshots.",
+    "The package does not authorize public or LAN exposure.",
+    "The package does not run Garmin ingest, the analytical pipeline or LLM calls.",
+    "The package is not an installer and does not implement automatic updates."
+  ]
+}

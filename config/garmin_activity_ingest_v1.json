@@ -1,0 +1,40 @@
+{
+  "policy_version": "garmin_activity_ingest_v1",
+  "enabled": false,
+  "optional_module": true,
+  "client_library": "garminconnect",
+  "credentials_mode": "local_tokenstore_only",
+  "local_tokenstore_directory": "data/local_secrets/garmin_tokenstore",
+  "allow_one_time_secret_bootstrap_from_previous_project": true,
+  "previous_project_runtime_dependency_allowed": false,
+  "activity_id_sources": [
+    "manual_config",
+    "trimmed_activities_csv"
+  ],
+  "manual_activity_ids": [],
+  "trimmed_activities_source": {
+    "manifest_path": "data/pipeline/03_trim_workbook/trimmed_sheets_manifest.json",
+    "expected_sheet_name": "Activities",
+    "activity_id_column": "activityId"
+  },
+  "requested_artifacts": {
+    "details_json": true,
+    "splits_json": true,
+    "fit_file": true,
+    "tcx_file": true
+  },
+  "output_directory": "data/pipeline/04_garmin_activity_ingest/activities",
+  "failure_policy": {
+    "missing_credentials": "skip",
+    "missing_dependency": "skip",
+    "no_activity_ids": "skip",
+    "individual_activity_failure": "continue_and_report",
+    "configuration_failure": "fail",
+    "artifact_write_failure": "fail"
+  },
+  "privacy_rules": {
+    "never_log_token_values": true,
+    "never_store_tokens_in_pipeline_artifacts": true,
+    "never_commit_downloaded_activity_data": true
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "policy_version": "openai_pws_policy_v1",
+  "purpose": "Run an optional external OpenAI PWS comparison using exactly the same bounded context, prompt, deterministic validation and local score calculation as the local LLM-assisted path.",
+  "provider": "openai",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "model": "gpt-5.2",
+  "model_environment_variable": "OPENAI_PWS_MODEL",
+  "api_key_environment_variable": "OPENAI_API_KEY",
+  "enable_cli_argument": "--enable-openai",
+  "enabled_by_default": false,
+  "store": false,
+  "timeout_seconds": 90,
+  "maximum_retry_count": 1,
+  "context_policy": {
+    "source": "config/llm_assisted_pws_policy_v1.json#allowed_context_fields",
+    "must_match_local_llm_context": true,
+    "raw_health_records_allowed": false,
+    "raw_garmin_payloads_allowed": false,
+    "tokens_or_credentials_allowed": false
+  },
+  "validation_policy": {
+    "source": "config/llm_assisted_pws_policy_v1.json#validation_policy",
+    "must_match_local_llm_guardrails": true,
+    "model_may_write_authoritative_score": false,
+    "score_must_be_calculated_locally": true
+  },
+  "outputs": {
+    "artifact": "data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws.json",
+    "quality_report": "data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws_quality_report.json",
+    "conversation_directory": "data/pipeline/13_validate_llm_weight_influence/openai_conversations"
+  },
+  "privacy": {
+    "explicit_enable_required": true,
+    "private_runtime_artifacts": true,
+    "do_not_log_api_key": true,
+    "do_not_store_hidden_reasoning": true,
+    "do_not_upload_raw_files": true
+  },
+  "prohibited_actions": [
+    "replace_deterministic_pws",
+    "replace_local_llm_assisted_pws",
+    "modify_component_scores",
+    "modify_deterministic_weights",
+    "send_raw_private_history",
+    "send_tokens_or_credentials",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "trigger_pipeline_from_ui"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "module_id": "06_normalize_activities",
+  "module_name": "Normalize Activities",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Normalizes available Garmin activity records from trimmed workbook artifacts and optional API ingest artifacts into a stable activity model and date-grouped output, without calculating derived training metrics.",
+  "depends_on": [
+    "00_project_contract",
+    "03_trim_workbook"
+  ],
+  "optional_inputs_from": [
+    "04_garmin_activity_ingest"
+  ],
+  "inputs": [
+    "config/garmin_activity_normalization_v1.json",
+    "optional: data/pipeline/03_trim_workbook/trimmed_sheets_manifest.json",
+    "optional: data/pipeline/03_trim_workbook/trimmed_sheets/Activities.csv",
+    "optional: data/pipeline/04_garmin_activity_ingest/activity_ingest_manifest.json",
+    "optional: activity artifacts referenced by the ingest manifest"
+  ],
+  "outputs": [
+    "data/pipeline/06_normalize_activities/activities_normalized.json",
+    "data/pipeline/06_normalize_activities/activities_normalized.csv",
+    "data/pipeline/06_normalize_activities/activities_by_date.json",
+    "data/pipeline/06_normalize_activities/activity_schema.json",
+    "data/pipeline/06_normalize_activities/activity_data_quality_report.json",
+    "data/pipeline/06_normalize_activities/run_manifest.json",
+    "data/pipeline/06_normalize_activities/run_log.txt",
+    "data/pipeline/06_normalize_activities/errors.json"
+  ],
+  "run_command": "pipeline/06_normalize_activities/run.bat",
+  "artifact_directory": "data/pipeline/06_normalize_activities",
+  "test_directory": "tests/06_normalize_activities",
+  "visualization_directory": "visualization/06_normalize_activities",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "trim_workbook",
+    "download_garmin_api_data",
+    "normalize_daily_records",
+    "parse_fit_files",
+    "parse_tcx_files",
+    "calculate_training_load",
+    "calculate_acwr",
+    "calculate_monotony",
+    "calculate_strain",
+    "calculate_readiness",
+    "calculate_pws",
+    "call_llm",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_activity_health_and_location_data",
+  "notes": [
+    "Activities are optional. Empty normalized outputs are valid when no activity source is available.",
+    "Workbook activity data is preferred when available; API artifacts may provide controlled enrichment.",
+    "Missing values remain null and are never replaced with zero.",
+    "FIT and TCX files are referenced only and must not be parsed in this module."
+  ]
+}

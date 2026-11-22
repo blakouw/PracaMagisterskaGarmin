@@ -1,0 +1,36 @@
+{
+  "module_id": "11_compute_deterministic_pws_weights",
+  "module_name": "Compute Deterministic PWS Weights",
+  "version": "1.0.0",
+  "status": "planned",
+  "optional": false,
+  "responsibility": "Computes deterministic PWS weights and pws_deterministic according to pws_policy_v1.",
+  "depends_on": [
+    "10_compute_pws_components"
+  ],
+  "inputs": [
+    "data/pipeline/10_compute_pws_components/pws_components.json",
+    "config/pws_policy_v1.json"
+  ],
+  "outputs": [
+    "data/pipeline/11_compute_deterministic_pws_weights/deterministic_pws.json",
+    "data/pipeline/11_compute_deterministic_pws_weights/run_manifest.json",
+    "data/pipeline/11_compute_deterministic_pws_weights/run_log.txt",
+    "data/pipeline/11_compute_deterministic_pws_weights/errors.json"
+  ],
+  "run_command": null,
+  "artifact_directory": "data/pipeline/11_compute_deterministic_pws_weights",
+  "test_directory": "tests/11_compute_deterministic_pws_weights",
+  "visualization_directory": "visualization/11_compute_deterministic_pws_weights",
+  "prohibited_responsibilities": [
+    "call_llm",
+    "accept_llm_weight_adjustment",
+    "build_coach_context",
+    "build_dashboard_payload",
+    "implement_api_server"
+  ],
+  "data_sensitivity": "private_derived_garmin_data",
+  "notes": [
+    "Implementation deferred until module 11."
+  ]
+}

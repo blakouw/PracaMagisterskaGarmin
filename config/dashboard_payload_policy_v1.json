@@ -1,0 +1,228 @@
+{
+  "policy_version": "dashboard_payload_policy_v1",
+  "source_modules": {
+    "load_metrics": "08_compute_load_metrics",
+    "readiness": "09_compute_readiness",
+    "pws_components": "10_compute_pws_components",
+    "pws_weights": "11_compute_pws_weights",
+    "pws_deterministic": "12_compute_pws_score",
+    "pws_llm_assisted": "13_validate_llm_weight_influence",
+    "pws_openai_assisted": "13_validate_llm_weight_influence"
+  },
+  "purpose": "Create a stable local presentation payload for a future dashboard without recomputing analytical results.",
+  "primary_score_policy": {
+    "primary_score_source": "pws_deterministic",
+    "primary_score_type": "deterministic",
+    "assisted_score_must_never_replace_primary": true,
+    "assisted_score_display_role": "optional_comparison_variant_only"
+  },
+  "latest_state_selection": {
+    "default_latest_date_source": "pws_deterministic_records",
+    "selection_rule": "latest_date_present_in_deterministic_pws_artifact",
+    "allow_latest_state_without_numeric_pws": true,
+    "important_note": "The latest date may exist even when PWS is not computed because coverage is insufficient."
+  },
+  "time_series_policy": {
+    "source_axis": "pws_deterministic_records",
+    "sort_order": "ascending_by_date",
+    "include_fields": [
+      "date",
+      "pws_deterministic",
+      "pws_deterministic_computed",
+      "pws_label_id",
+      "pws_label",
+      "pws_coverage_ratio",
+      "pws_coverage_tier",
+      "optional_assisted_pws",
+      "external_assisted_pws",
+      "external_assisted_label_id",
+      "external_assisted_delta_from_deterministic",
+      "readiness_score",
+      "readiness_label_id",
+      "lq_score",
+      "rec_score",
+      "cap_score",
+      "vs_score",
+      "weight_lq",
+      "weight_rec",
+      "weight_cap",
+      "weight_vs",
+      "local_llm_weight_lq",
+      "local_llm_weight_rec",
+      "local_llm_weight_cap",
+      "local_llm_weight_vs",
+      "openai_weight_lq",
+      "openai_weight_rec",
+      "openai_weight_cap",
+      "openai_weight_vs",
+      "acwr_ewma",
+      "acwr_rolling",
+      "acute_ewma_7d",
+      "chronic_ewma_28d",
+      "monotony_7d",
+      "strain_7d"
+    ],
+    "do_not_impute_missing_values": true,
+    "do_not_recompute_missing_values": true
+  },
+  "current_state_sections": [
+    "primary_pws",
+    "optional_assisted_pws",
+    "external_assisted_pws",
+    "readiness",
+    "pws_components",
+    "pws_weights",
+    "load_metrics",
+    "coverage",
+    "source_statuses",
+    "disclosures"
+  ],
+  "allowed_presentation_fields": {
+    "primary_pws": [
+      "score",
+      "computed",
+      "label_id",
+      "label",
+      "coverage_ratio",
+      "coverage_tier",
+      "computed_from_partial_coverage",
+      "weighted_contributions"
+    ],
+    "optional_assisted_pws": [
+      "available",
+      "score",
+      "label_id",
+      "label",
+      "delta_from_deterministic",
+      "status",
+      "validated_adjusted_weights",
+      "display_disclosure"
+    ],
+    "external_assisted_pws": [
+      "available",
+      "score",
+      "label_id",
+      "label",
+      "delta_from_deterministic",
+      "status",
+      "provider",
+      "model",
+      "validated_adjusted_weights",
+      "must_not_replace_primary_score",
+      "must_not_replace_local_llm_variant",
+      "display_disclosure"
+    ],
+    "readiness": [
+      "readiness_score",
+      "readiness_status",
+      "readiness_label_id",
+      "readiness_label",
+      "readiness_coverage_ratio",
+      "available_readiness_components",
+      "missing_readiness_components"
+    ],
+    "pws_components": [
+      "lq_score",
+      "lq_status",
+      "rec_score",
+      "rec_status",
+      "cap_score",
+      "cap_status",
+      "vs_score",
+      "vs_status",
+      "available_pws_components",
+      "missing_pws_components",
+      "pws_components_coverage_ratio"
+    ],
+    "pws_weights": [
+      "base_component_weights",
+      "deterministic_effective_weights",
+      "weights_ready_for_final_pws",
+      "weights_readiness_status",
+      "overlap_disclosures"
+    ],
+    "load_metrics": [
+      "acwr_ewma",
+      "acwr_rolling",
+      "acute_ewma_7d",
+      "chronic_ewma_28d",
+      "monotony_7d",
+      "strain_7d"
+    ]
+  },
+  "forbidden_payload_content": [
+    "raw_workbook_data",
+    "raw_garmin_api_payloads",
+    "tokens",
+    "credentials",
+    "fit_files",
+    "tcx_files",
+    "llm_raw_unvalidated_response",
+    "medical_diagnosis",
+    "injury_prediction",
+    "training_prescription",
+    "coach_message"
+  ],
+  "optional_llm_assisted_policy": {
+    "input_optional": true,
+    "available_only_when": [
+      "pws_llm_assisted_computed == true",
+      "llm_adjustment_applied == true",
+      "llm proposal validation status indicates acceptance"
+    ],
+    "no_artifact_status": "not_available_no_assisted_artifact",
+    "skipped_status": "not_available_llm_path_skipped",
+    "no_adjustment_status": "not_available_no_adjustment_proposed",
+    "rejected_status": "not_available_proposal_rejected",
+    "accepted_status": "available_validated_assisted_variant",
+    "must_label_as_optional": true,
+    "must_never_promote_to_primary": true
+  },
+  "optional_external_assisted_policy": {
+    "input_optional": true,
+    "source_artifact": "data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws.json",
+    "same_bounded_context_as_local_llm": true,
+    "same_deterministic_validation_as_local_llm": true,
+    "must_label_provider_and_model": true,
+    "must_never_promote_to_primary": true,
+    "must_never_replace_local_llm_variant": true
+  },
+  "quality_policy": {
+    "expose_source_module_statuses": true,
+    "expose_coverage": true,
+    "expose_missing_components": true,
+    "expose_partial_score_disclosure": true,
+    "expose_optional_llm_status": true
+  },
+  "privacy_policy": {
+    "payload_is_private": true,
+    "local_artifact_only": true,
+    "must_be_gitignored": true,
+    "do_not_include_secrets": true,
+    "do_not_include_raw_private_sources": true
+  },
+  "limitations": [
+    "Dashboard payload is a presentation artifact and does not calculate analytical metrics.",
+    "PWS is a heuristic decision-support indicator and is not a medical diagnosis, injury prediction or professional training prescription.",
+    "Deterministic PWS is the primary score.",
+    "Local and external LLM-assisted PWS values, when available, are optional separately labelled comparison variants only.",
+    "Missing values remain null and are not replaced with zero."
+  ],
+  "prohibited_responsibilities": [
+    "recompute_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "recompute_pws_weights",
+    "recompute_pws_deterministic",
+    "recompute_pws_llm_assisted",
+    "call_llm",
+    "generate_coaching",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "implement_api_server",
+    "implement_user_interface",
+    "implement_authentication",
+    "download_garmin_data"
+  ]
+}

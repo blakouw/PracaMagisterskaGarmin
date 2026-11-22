@@ -1,0 +1,64 @@
+{
+  "module_id": "09_compute_readiness",
+  "module_name": "Compute Readiness",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Computes a deterministic daily readiness score from available HRV, stress, resting heart rate and configured ACWR signals, while explicitly handling missing data and preserving auditability.",
+  "depends_on": [
+    "00_project_contract",
+    "05_normalize_daily_records",
+    "07_build_daily_features",
+    "08_compute_load_metrics"
+  ],
+  "optional_inputs_from": [],
+  "inputs": [
+    "config/readiness_policy_v1.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_schema.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_quality_report.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_lineage.json"
+  ],
+  "outputs": [
+    "data/pipeline/09_compute_readiness/readiness.json",
+    "data/pipeline/09_compute_readiness/readiness.csv",
+    "optional: data/pipeline/09_compute_readiness/readiness.parquet",
+    "data/pipeline/09_compute_readiness/readiness_schema.json",
+    "data/pipeline/09_compute_readiness/readiness_quality_report.json",
+    "data/pipeline/09_compute_readiness/readiness_lineage.json",
+    "data/pipeline/09_compute_readiness/run_manifest.json",
+    "data/pipeline/09_compute_readiness/run_log.txt",
+    "data/pipeline/09_compute_readiness/errors.json"
+  ],
+  "run_command": "pipeline/09_compute_readiness/run.bat",
+  "artifact_directory": "data/pipeline/09_compute_readiness",
+  "test_directory": "tests/09_compute_readiness",
+  "visualization_directory": "visualization/09_compute_readiness",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "trim_workbook",
+    "download_garmin_api_data",
+    "normalize_daily_records",
+    "normalize_activities",
+    "build_base_daily_features",
+    "recompute_load_metrics",
+    "calculate_pws_components",
+    "calculate_pws_weights",
+    "calculate_pws_score",
+    "call_llm",
+    "generate_medical_diagnosis",
+    "generate_training_prescription",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_activity_and_training_data",
+  "notes": [
+    "Readiness is a deterministic short-term decision-support indicator and is not a medical diagnosis.",
+    "Missing components remain null and are not replaced by zero.",
+    "Final readiness is computed only when configured minimum data availability is met.",
+    "PWS components, PWS weighting and LLM influence belong exclusively to later modules."
+  ]
+}

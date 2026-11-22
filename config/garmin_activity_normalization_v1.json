@@ -1,0 +1,402 @@
+{
+  "policy_version": "garmin_activity_normalization_v1",
+  "source_modules": {
+    "workbook_trimmed_activities": "03_trim_workbook",
+    "optional_api_ingest": "04_garmin_activity_ingest"
+  },
+  "activity_sources_optional": true,
+  "normalized_activity_primary_key": "activity_id",
+  "date_assignment_field": "start_time_local",
+  "normalized_date_field": "date",
+  "date_assignment_rule": "extract_local_calendar_date_from_start_time_local",
+  "missing_values_policy": "preserve_as_null",
+  "duplicate_activity_id_policy": "merge_by_explicit_source_priority_and_report_conflicts",
+  "source_priority": [
+    "workbook_activities_csv",
+    "api_details_json",
+    "api_splits_json"
+  ],
+  "source_role_policy": {
+    "workbook_activities_csv": "primary_tabular_activity_source_when_available",
+    "api_details_json": "optional_enrichment_and_api_only_record_source_when_core_identity_fields_exist",
+    "api_splits_json": "optional_nested_split_enrichment_only",
+    "fit_file": "reference_only_do_not_parse",
+    "tcx_file": "reference_only_do_not_parse"
+  },
+  "unit_conversions": {
+    "distance": {
+      "source_unit": "meters",
+      "normalized_field": "distance_km",
+      "rule": "divide numeric source value by 1000"
+    },
+    "average_speed": {
+      "source_unit": "meters_per_second",
+      "normalized_field": "average_speed_kmh",
+      "rule": "multiply numeric source value by 3.6"
+    },
+    "maximum_speed": {
+      "source_unit": "meters_per_second",
+      "normalized_field": "maximum_speed_kmh",
+      "rule": "multiply numeric source value by 3.6"
+    },
+    "duration": {
+      "source_unit": "seconds",
+      "normalized_field": "duration_seconds",
+      "rule": "preserve numeric source value as seconds"
+    },
+    "elevation": {
+      "source_unit": "meters",
+      "normalized_fields": [
+        "elevation_gain_m",
+        "elevation_loss_m"
+      ],
+      "rule": "preserve numeric source values as meters"
+    },
+    "heart_rate_zones": {
+      "source_unit": "seconds_if_provided_by_source",
+      "normalized_fields": [
+        "hr_zone_1_seconds",
+        "hr_zone_2_seconds",
+        "hr_zone_3_seconds",
+        "hr_zone_4_seconds",
+        "hr_zone_5_seconds"
+      ],
+      "rule": "preserve numeric source values as seconds only when source meaning is explicit"
+    }
+  },
+  "workbook_mapping": {
+    "activityId": {
+      "target": "activity_id",
+      "type": "string",
+      "required": true
+    },
+    "activityName": {
+      "target": "activity_name",
+      "type": "string"
+    },
+    "activityType": {
+      "target": "activity_type",
+      "type": "string"
+    },
+    "startTimeLocal": {
+      "target": "start_time_local",
+      "type": "datetime",
+      "required": true
+    },
+    "distance": {
+      "target": "distance_km",
+      "type": "number",
+      "conversion": "meters_to_km"
+    },
+    "duration": {
+      "target": "duration_seconds",
+      "type": "number",
+      "conversion": "seconds"
+    },
+    "calories": {
+      "target": "calories",
+      "type": "number"
+    },
+    "averageSpeed": {
+      "target": "average_speed_kmh",
+      "type": "number",
+      "conversion": "mps_to_kmh"
+    },
+    "maxSpeed": {
+      "target": "maximum_speed_kmh",
+      "type": "number",
+      "conversion": "mps_to_kmh"
+    },
+    "averageHR": {
+      "target": "average_hr_bpm",
+      "type": "number"
+    },
+    "maxHR": {
+      "target": "maximum_hr_bpm",
+      "type": "number"
+    },
+    "avgPower": {
+      "target": "average_power_w",
+      "type": "number"
+    },
+    "maxPower": {
+      "target": "maximum_power_w",
+      "type": "number"
+    },
+    "elevationGain": {
+      "target": "elevation_gain_m",
+      "type": "number"
+    },
+    "elevationLoss": {
+      "target": "elevation_loss_m",
+      "type": "number"
+    },
+    "hrTimeInZone1": {
+      "target": "hr_zone_1_seconds",
+      "type": "number"
+    },
+    "hrTimeInZone2": {
+      "target": "hr_zone_2_seconds",
+      "type": "number"
+    },
+    "hrTimeInZone3": {
+      "target": "hr_zone_3_seconds",
+      "type": "number"
+    },
+    "hrTimeInZone4": {
+      "target": "hr_zone_4_seconds",
+      "type": "number"
+    },
+    "hrTimeInZone5": {
+      "target": "hr_zone_5_seconds",
+      "type": "number"
+    },
+    "directWorkoutRpe": {
+      "target": "perceived_effort_rpe",
+      "type": "number",
+      "conversion": "garmin_rpe_0_100_to_0_10"
+    },
+    "directWorkoutFeel": {
+      "target": "subjective_feeling_score",
+      "type": "number",
+      "conversion": "garmin_feeling_0_100"
+    },
+    "directWorkoutRpe": {
+      "target": "perceived_effort_rpe",
+      "type": "number",
+      "conversion": "garmin_rpe_0_100_to_0_10"
+    },
+    "directWorkoutFeel": {
+      "target": "subjective_feeling_score",
+      "type": "number",
+      "conversion": "garmin_feeling_0_100"
+    },
+    "directWorkoutRpe": {
+      "target": "perceived_effort_rpe",
+      "type": "number",
+      "conversion": "garmin_rpe_0_100_to_0_10"
+    },
+    "directWorkoutFeel": {
+      "target": "subjective_feeling_score",
+      "type": "number",
+      "conversion": "garmin_feeling_0_100"
+    },
+    "directWorkoutRpe": {
+      "target": "perceived_effort_rpe",
+      "type": "number",
+      "conversion": "garmin_rpe_0_100_to_0_10"
+    },
+    "directWorkoutFeel": {
+      "target": "subjective_feeling_score",
+      "type": "number",
+      "conversion": "garmin_feeling_0_100"
+    },
+    "directWorkoutRpe": {
+      "target": "perceived_effort_rpe",
+      "type": "number",
+      "conversion": "garmin_rpe_0_100_to_0_10"
+    },
+    "directWorkoutFeel": {
+      "target": "subjective_feeling_score",
+      "type": "number",
+      "conversion": "garmin_feeling_0_100"
+    }
+  },
+  "api_details_mapping": {
+    "activityId": {
+      "target": "activity_id",
+      "type": "string",
+      "required": true
+    },
+    "activityName": {
+      "target": "activity_name",
+      "type": "string"
+    },
+    "activityType": {
+      "target": "activity_type",
+      "type": "string"
+    },
+    "startTimeLocal": {
+      "target": "start_time_local",
+      "type": "datetime",
+      "required": true
+    },
+    "distance": {
+      "target": "distance_km",
+      "type": "number",
+      "conversion": "meters_to_km"
+    },
+    "duration": {
+      "target": "duration_seconds",
+      "type": "number",
+      "conversion": "seconds"
+    },
+    "calories": {
+      "target": "calories",
+      "type": "number"
+    },
+    "averageSpeed": {
+      "target": "average_speed_kmh",
+      "type": "number",
+      "conversion": "mps_to_kmh"
+    },
+    "maxSpeed": {
+      "target": "maximum_speed_kmh",
+      "type": "number",
+      "conversion": "mps_to_kmh"
+    },
+    "averageHR": {
+      "target": "average_hr_bpm",
+      "type": "number"
+    },
+    "maxHR": {
+      "target": "maximum_hr_bpm",
+      "type": "number"
+    },
+    "avgPower": {
+      "target": "average_power_w",
+      "type": "number"
+    },
+    "maxPower": {
+      "target": "maximum_power_w",
+      "type": "number"
+    },
+    "elevationGain": {
+      "target": "elevation_gain_m",
+      "type": "number"
+    },
+    "elevationLoss": {
+      "target": "elevation_loss_m",
+      "type": "number"
+    }
+  },
+  "api_splits_mapping": {
+    "root": "splits",
+    "fields": {
+      "distance": {
+        "target": "distance_km",
+        "type": "number",
+        "conversion": "meters_to_km"
+      },
+      "duration": {
+        "target": "duration_seconds",
+        "type": "number",
+        "conversion": "seconds"
+      },
+      "averageSpeed": {
+        "target": "average_speed_kmh",
+        "type": "number",
+        "conversion": "mps_to_kmh"
+      },
+      "averageHR": {
+        "target": "average_hr_bpm",
+        "type": "number"
+      },
+      "maxHR": {
+        "target": "maximum_hr_bpm",
+        "type": "number"
+      },
+      "avgPower": {
+        "target": "average_power_w",
+        "type": "number"
+      },
+      "elevationGain": {
+        "target": "elevation_gain_m",
+        "type": "number"
+      }
+    }
+  },
+  "fit_tcx_policy": {
+    "parse_fit": false,
+    "parse_tcx": false,
+    "store_reference_if_available": true
+  },
+  "unknown_source_fields_policy": "ignore_and_report",
+  "invalid_optional_numeric_value_policy": "set_null_and_warn",
+  "invalid_core_identity_policy": "exclude_record_and_report",
+  "output_fields": [
+    "activity_id",
+    "date",
+    "start_time_local",
+    "activity_type",
+    "activity_name",
+    "source_presence",
+    "distance_km",
+    "duration_seconds",
+    "calories",
+    "average_speed_kmh",
+    "maximum_speed_kmh",
+    "average_hr_bpm",
+    "maximum_hr_bpm",
+    "average_power_w",
+    "maximum_power_w",
+    "elevation_gain_m",
+    "elevation_loss_m",
+    "hr_zone_1_seconds",
+    "hr_zone_2_seconds",
+    "hr_zone_3_seconds",
+    "hr_zone_4_seconds",
+    "hr_zone_5_seconds",
+    "perceived_effort_rpe",
+    "subjective_feeling_score",
+    "splits",
+    "api_artifacts",
+    "field_sources",
+    "warnings"
+  ],
+  "csv_fields": [
+    "activity_id",
+    "date",
+    "start_time_local",
+    "activity_type",
+    "activity_name",
+    "distance_km",
+    "duration_seconds",
+    "calories",
+    "average_speed_kmh",
+    "maximum_speed_kmh",
+    "average_hr_bpm",
+    "maximum_hr_bpm",
+    "average_power_w",
+    "maximum_power_w",
+    "elevation_gain_m",
+    "elevation_loss_m",
+    "hr_zone_1_seconds",
+    "hr_zone_2_seconds",
+    "hr_zone_3_seconds",
+    "hr_zone_4_seconds",
+    "hr_zone_5_seconds",
+    "perceived_effort_rpe",
+    "subjective_feeling_score",
+    "has_workbook_source",
+    "has_api_details",
+    "has_api_splits",
+    "has_fit_file",
+    "has_tcx_file"
+  ],
+  "prohibited_derived_metrics": [
+    "training_load",
+    "load_quality",
+    "acute_load",
+    "chronic_load",
+    "acwr",
+    "monotony",
+    "strain",
+    "capacity_score",
+    "readiness",
+    "pws_components",
+    "pws_weights",
+    "pws_score"
+  ],
+  "notes": [
+    "Workbook activities are the preferred source of UI-facing activity fields when available.",
+    "API details may enrich missing fields or create an API-only record only when activity identity and local start time are explicitly mappable.",
+    "FIT and TCX files are referenced only and are not parsed in this module.",
+    "Missing values remain null and must not be replaced with zero.",
+    "Garmin directWorkoutRpe is normalized from the stored 0-100 scale to the user-facing 0-10 RPE scale; absent evaluations remain null.",
+    "Garmin directWorkoutRpe is normalized from the stored 0-100 scale to the user-facing 0-10 RPE scale; absent evaluations remain null.",
+    "Garmin directWorkoutRpe is normalized from the stored 0-100 scale to the user-facing 0-10 RPE scale; absent evaluations remain null.",
+    "Garmin directWorkoutRpe is normalized from the stored 0-100 scale to the user-facing 0-10 RPE scale; absent evaluations remain null.",
+    "Garmin directWorkoutRpe is normalized from the stored 0-100 scale to the user-facing 0-10 RPE scale; absent evaluations remain null."
+  ]
+}

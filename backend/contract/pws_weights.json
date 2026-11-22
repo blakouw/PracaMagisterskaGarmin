@@ -1,0 +1,69 @@
+{
+  "module_id": "11_compute_pws_weights",
+  "module_name": "Compute PWS Weights",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Computes auditable deterministic weights for available PWS components, applies bounded reliability, urgency and overlap controls, and publishes hard guardrails for a future optional LLM weight-adjustment stage without calculating final PWS or invoking an LLM.",
+  "depends_on": [
+    "00_project_contract",
+    "10_compute_pws_components"
+  ],
+  "optional_inputs_from": [],
+  "inputs": [
+    "config/pws_weights_policy_v1.json",
+    "config/pws_policy_v1.json",
+    "config/llm_policy_v1.json",
+    "config/pws_components_policy_v1.json",
+    "data/pipeline/10_compute_pws_components/pws_components.json",
+    "data/pipeline/10_compute_pws_components/pws_components_schema.json",
+    "data/pipeline/10_compute_pws_components/pws_components_quality_report.json",
+    "data/pipeline/10_compute_pws_components/pws_components_lineage.json"
+  ],
+  "outputs": [
+    "data/pipeline/11_compute_pws_weights/pws_weights.json",
+    "data/pipeline/11_compute_pws_weights/pws_weights.csv",
+    "optional: data/pipeline/11_compute_pws_weights/pws_weights.parquet",
+    "data/pipeline/11_compute_pws_weights/pws_weights_schema.json",
+    "data/pipeline/11_compute_pws_weights/pws_weights_quality_report.json",
+    "data/pipeline/11_compute_pws_weights/pws_weights_lineage.json",
+    "data/pipeline/11_compute_pws_weights/pws_weight_guardrails.json",
+    "data/pipeline/11_compute_pws_weights/run_manifest.json",
+    "data/pipeline/11_compute_pws_weights/run_log.txt",
+    "data/pipeline/11_compute_pws_weights/errors.json"
+  ],
+  "run_command": "pipeline/11_compute_pws_weights/run.bat",
+  "artifact_directory": "data/pipeline/11_compute_pws_weights",
+  "test_directory": "tests/11_compute_pws_weights",
+  "visualization_directory": "visualization/11_compute_pws_weights",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "trim_workbook",
+    "download_garmin_api_data",
+    "normalize_daily_records",
+    "normalize_activities",
+    "build_base_daily_features",
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "calculate_final_pws",
+    "calculate_llm_assisted_pws",
+    "call_llm",
+    "apply_llm_adjustment",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_activity_and_training_data",
+  "notes": [
+    "The module computes deterministic component weights only. It must not calculate final PWS.",
+    "Unavailable component scores remain null; their zero effective weight means exclusion from weighting, not zero wellness quality.",
+    "Future LLM adjustment is constrained by published guardrails and is not executed here.",
+    "The deterministic weighting path must remain available independently of any future LLM-assisted path."
+  ]
+}

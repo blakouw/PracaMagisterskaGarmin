@@ -1,0 +1,49 @@
+{
+  "module_id": "02_read_xlsx_workbook",
+  "module_name": "Read XLSX Workbook",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Reads the formally selected Garmin XLSX workbook as ZIP/XML and writes raw structured sheet artifacts without applying domain filtering or transformations.",
+  "depends_on": [
+    "00_project_contract",
+    "01_find_input_workbook"
+  ],
+  "inputs": [
+    "data/pipeline/01_find_input_workbook/workbook_manifest.json",
+    "selected local Garmin workbook referenced by the input manifest"
+  ],
+  "outputs": [
+    "data/pipeline/02_read_xlsx_workbook/workbook_structure.json",
+    "data/pipeline/02_read_xlsx_workbook/raw_sheets_manifest.json",
+    "data/pipeline/02_read_xlsx_workbook/raw_sheets/*.json",
+    "data/pipeline/02_read_xlsx_workbook/run_manifest.json",
+    "data/pipeline/02_read_xlsx_workbook/run_log.txt",
+    "data/pipeline/02_read_xlsx_workbook/errors.json"
+  ],
+  "run_command": "pipeline/02_read_xlsx_workbook/run.bat",
+  "artifact_directory": "data/pipeline/02_read_xlsx_workbook",
+  "test_directory": "tests/02_read_xlsx_workbook",
+  "visualization_directory": "visualization/02_read_xlsx_workbook",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "select_required_sheets",
+    "classify_keep_drop_sheets",
+    "trim_columns",
+    "normalize_daily_records",
+    "normalize_activities",
+    "fetch_garmin_api_data",
+    "calculate_metrics",
+    "calculate_readiness",
+    "calculate_pws",
+    "call_llm",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_and_activity_data",
+  "notes": [
+    "Raw sheet artifacts may contain private Garmin health and activity data and must remain local.",
+    "This module parses XLSX structure and raw cell values only. Selection and trimming belong exclusively to module 03_trim_workbook."
+  ]
+}

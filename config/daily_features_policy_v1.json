@@ -1,0 +1,165 @@
+{
+  "policy_version": "daily_features_policy_v1",
+  "primary_source_module": "05_normalize_daily_records",
+  "optional_activity_source_module": "06_normalize_activities",
+  "primary_key": "date",
+  "primary_key_format": "YYYY-MM-DD",
+  "row_creation_rule": "one_feature_row_per_daily_record_date_only",
+  "join_strategy": "left_join_daily_activity_aggregates_to_daily_records",
+  "orphan_activity_dates_policy": "exclude_and_report",
+  "missing_health_values_policy": "preserve_as_null",
+  "no_activity_technical_aggregation_policy": "zero_for_counts_and_sums_null_for_means",
+  "copy_daily_record_fields": true,
+  "activity_daily_aggregations": {
+    "activity_count": {
+      "operation": "count_records",
+      "output_type": "integer",
+      "empty_day_value": 0
+    },
+    "activity_total_distance_km": {
+      "source_field": "distance_km",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_duration_seconds": {
+      "source_field": "duration_seconds",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_calories": {
+      "source_field": "calories",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_elevation_gain_m": {
+      "source_field": "elevation_gain_m",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_elevation_loss_m": {
+      "source_field": "elevation_loss_m",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_hr_zone_1_seconds": {
+      "source_field": "hr_zone_1_seconds",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_hr_zone_2_seconds": {
+      "source_field": "hr_zone_2_seconds",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_hr_zone_3_seconds": {
+      "source_field": "hr_zone_3_seconds",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_hr_zone_4_seconds": {
+      "source_field": "hr_zone_4_seconds",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_total_hr_zone_5_seconds": {
+      "source_field": "hr_zone_5_seconds",
+      "operation": "sum_available_values",
+      "output_type": "number",
+      "empty_day_value": 0
+    },
+    "activity_duration_weighted_average_hr_bpm": {
+      "value_field": "average_hr_bpm",
+      "weight_field": "duration_seconds",
+      "operation": "weighted_average_available_pairs",
+      "output_type": "number",
+      "empty_day_value": null
+    },
+    "activity_duration_weighted_average_power_w": {
+      "value_field": "average_power_w",
+      "weight_field": "duration_seconds",
+      "operation": "weighted_average_available_pairs",
+      "output_type": "number",
+      "empty_day_value": null
+    },
+    "activity_duration_weighted_average_speed_kmh": {
+      "value_field": "average_speed_kmh",
+      "weight_field": "duration_seconds",
+      "operation": "weighted_average_available_pairs",
+      "output_type": "number",
+      "empty_day_value": null
+    },
+    "activity_maximum_hr_bpm": {
+      "source_field": "maximum_hr_bpm",
+      "operation": "max_available_values",
+      "output_type": "number",
+      "empty_day_value": null
+    },
+    "activity_maximum_power_w": {
+      "source_field": "maximum_power_w",
+      "operation": "max_available_values",
+      "output_type": "number",
+      "empty_day_value": null
+    },
+    "activity_types_present": {
+      "source_field": "activity_type",
+      "operation": "sorted_unique_non_null_values",
+      "output_type": "array",
+      "empty_day_value": []
+    },
+    "activity_ids": {
+      "source_field": "activity_id",
+      "operation": "sorted_unique_values",
+      "output_type": "array",
+      "empty_day_value": []
+    }
+  },
+  "storage_formats": {
+    "json": {
+      "required": true
+    },
+    "csv": {
+      "required": true
+    },
+    "parquet": {
+      "preferred": true,
+      "dependency": "pyarrow",
+      "fallback_if_unavailable": "continue_with_json_and_csv_and_report_warning"
+    }
+  },
+  "prohibited_derived_metrics": [
+    "rhr_delta",
+    "rmssd_ms_derived",
+    "ln_rmssd",
+    "load_acute",
+    "load_chronic",
+    "acute_load",
+    "chronic_load",
+    "acwr",
+    "acwr_ewma",
+    "monotony",
+    "strain",
+    "training_load",
+    "load_quality",
+    "capacity_score",
+    "readiness",
+    "pws_components",
+    "pws_weights",
+    "pws_score",
+    "pws_priority"
+  ],
+  "notes": [
+    "This module builds a base daily feature table and does not calculate analytical or decision-support metrics.",
+    "Technical activity sums and counts describe available activity records and are not readiness or performance scores.",
+    "Missing physiological values remain null and are never replaced with zero.",
+    "Dates are sourced only from module 05 daily records."
+  ]
+}

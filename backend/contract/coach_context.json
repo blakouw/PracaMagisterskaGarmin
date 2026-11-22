@@ -1,0 +1,37 @@
+{
+  "module_id": "14_build_coach_context",
+  "module_name": "Build Coach Context",
+  "version": "1.0.0",
+  "status": "planned",
+  "optional": false,
+  "responsibility": "Builds a concise coach context from final PWS outputs and relevant recent activity summaries.",
+  "depends_on": [
+    "13_validate_llm_weight_influence"
+  ],
+  "inputs": [
+    "data/pipeline/13_validate_llm_weight_influence/final_pws.json",
+    "data/pipeline/06_normalize_activities/activities_normalized.json"
+  ],
+  "outputs": [
+    "data/pipeline/14_build_coach_context/coach_context.json",
+    "data/pipeline/14_build_coach_context/run_manifest.json",
+    "data/pipeline/14_build_coach_context/run_log.txt",
+    "data/pipeline/14_build_coach_context/errors.json"
+  ],
+  "run_command": null,
+  "artifact_directory": "data/pipeline/14_build_coach_context",
+  "test_directory": "tests/14_build_coach_context",
+  "visualization_directory": "visualization/14_build_coach_context",
+  "prohibited_responsibilities": [
+    "calculate_pws",
+    "call_llm_for_weight_changes",
+    "build_dashboard_payload",
+    "persist_snapshot",
+    "implement_api_server",
+    "implement_ui"
+  ],
+  "data_sensitivity": "private_derived_garmin_data",
+  "notes": [
+    "Implementation deferred until module 14."
+  ]
+}

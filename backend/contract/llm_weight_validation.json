@@ -1,0 +1,83 @@
+{
+  "module_id": "13_validate_llm_weight_influence",
+  "module_name": "Compute Optional LLM-Assisted PWS",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": true,
+  "responsibility": "Optionally requests one structured proposal for each eligible PWS date from the approved local model and, when explicitly enabled, from OpenAI using the same bounded context and deterministic guardrails; it stores both comparison variants separately without modifying deterministic PWS.",
+  "depends_on": [
+    "00_project_contract",
+    "10_compute_pws_components",
+    "11_compute_pws_weights",
+    "12_compute_pws_score"
+  ],
+  "optional_inputs_from": [],
+  "inputs": [
+    "config/llm_assisted_pws_policy_v1.json",
+    "config/llm_weight_adjustment_prompt_v1.json",
+    "config/llm_policy_v1.json",
+    "config/openai_pws_policy_v1.json",
+    "config/pws_score_policy_v1.json",
+    "data/pipeline/10_compute_pws_components/pws_components.json",
+    "data/pipeline/11_compute_pws_weights/pws_weights.json",
+    "data/pipeline/11_compute_pws_weights/pws_weight_guardrails.json",
+    "data/pipeline/12_compute_pws_score/pws_score.json",
+    "optional: data/local_context/llm_user_goal_context.json"
+  ],
+  "outputs": [
+    "data/pipeline/13_validate_llm_weight_influence/llm_assisted_pws.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_assisted_pws_schema.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_assisted_pws_quality_report.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_assisted_pws_lineage.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_request_audit.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_response_audit.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_validation_report.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_conversation_index.json",
+    "data/pipeline/13_validate_llm_weight_influence/llm_conversations/<date>.json",
+    "data/pipeline/13_validate_llm_weight_influence/run_manifest.json",
+    "data/pipeline/13_validate_llm_weight_influence/run_log.txt",
+    "data/pipeline/13_validate_llm_weight_influence/errors.json"
+    ,"data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws.json"
+    ,"data/pipeline/13_validate_llm_weight_influence/openai_assisted_pws_quality_report.json"
+    ,"data/pipeline/13_validate_llm_weight_influence/openai_conversation_index.json"
+    ,"data/pipeline/13_validate_llm_weight_influence/openai_conversations/<date>.json"
+    ,"data/pipeline/13_validate_llm_weight_influence/openai_run_manifest.json"
+    ,"data/pipeline/13_validate_llm_weight_influence/openai_errors.json"
+  ],
+  "run_command": "pipeline/13_validate_llm_weight_influence/run.bat",
+  "external_run_command": "pipeline/13_validate_llm_weight_influence/run_openai.bat",
+  "artifact_directory": "data/pipeline/13_validate_llm_weight_influence",
+  "test_directory": "tests/13_validate_llm_weight_influence",
+  "visualization_directory": "visualization/13_validate_llm_weight_influence",
+  "prohibited_responsibilities": [
+    "send_full_private_history_in_one_llm_request",
+    "modify_deterministic_pws",
+    "modify_deterministic_weights",
+    "modify_pws_components",
+    "assign_weight_to_unavailable_component",
+    "replace_missing_component_with_zero",
+    "bypass_guardrails",
+    "hide_guardrail_findings",
+    "send_raw_health_data_to_llm",
+    "send_more_context_to_external_provider_than_to_local_llm",
+    "send_credentials_to_llm",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "generate_coaching_message",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_derived_health_activity_training_and_llm_interaction_data",
+  "notes": [
+    "This is an optional module. The deterministic PWS path must remain valid without it.",
+    "The default run processes every eligible date in ascending order using one independent bounded LLM request per date.",
+    "The --date option remains available for a single-date diagnostic run.",
+    "Every schema-valid numeric proposal is retained. A proposal outside standard guardrails is normalized locally to a valid nonnegative unit-sum weight vector and remains marked with its original findings.",
+    "A separate audit log is written for every attempted date. It contains the startup prompt, structured context, parsed response, explicit reason summary, findings and effective weights; hidden model reasoning is not requested or stored.",
+    "PWS assisted output is stored separately and never overwrites deterministic PWS."
+    ,"The OpenAI variant is opt-in, uses the same bounded structured context and guardrails as the local model, and never replaces either deterministic PWS or the local LLM variant."
+  ]
+}

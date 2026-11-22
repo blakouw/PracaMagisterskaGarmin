@@ -1,0 +1,775 @@
+{
+  "policy_version": "garmin_daily_normalization_v1",
+  "source_module": "03_trim_workbook",
+  "primary_sheet": "Daily_Summary",
+  "primary_source_date_field": "calendarDate",
+  "normalized_date_field": "date",
+  "date_format": "YYYY-MM-DD",
+  "join_strategy": "left_join_optional_daily_sheets_to_daily_summary_dates",
+  "unknown_source_columns_policy": "ignore_and_report",
+  "missing_values_policy": "preserve_as_null",
+  "duplicate_date_policy": "fail_for_consumed_daily_sheets",
+  "orphan_optional_rows_policy": "exclude_and_report",
+  "activities_sheet_policy": "exclude_from_this_module",
+  "api_activity_artifacts_policy": "exclude_from_this_module",
+  "unit_conversions": {
+    "body_weight": {
+      "normalized_field": "weight_kg",
+      "rule": "if numeric source value is greater than 400, treat as grams and divide by 1000; otherwise treat as kilograms"
+    }
+  },
+  "output_fields": [
+    "date",
+    "active_kcal",
+    "steps",
+    "resting_hr_bpm",
+    "resting_hr_baseline_bpm",
+    "resting_hr_avg_bpm",
+    "avg_stress",
+    "max_stress",
+    "sleep_seconds",
+    "deep_sleep_seconds",
+    "light_sleep_seconds",
+    "rem_sleep_seconds",
+    "awake_sleep_seconds",
+    "hrv_weekly_avg_ms",
+    "hrv_last_night_avg_ms",
+    "hrv_status",
+    "hrv_baseline_balanced_low_ms",
+    "hrv_baseline_balanced_upper_ms",
+    "avg_spo2",
+    "avg_sleep_spo2",
+    "lowest_sleep_spo2",
+    "lowest_spo2",
+    "avg_spo2_7d",
+    "avg_sleep_respiration",
+    "lowest_respiration",
+    "avg_waking_respiration",
+    "moderate_minutes",
+    "vigorous_minutes",
+    "total_intensity_minutes_source",
+    "steps_distance_source",
+    "steps_goal",
+    "weight_kg"
+  ],
+  "field_definitions": [
+    {
+      "name": "date",
+      "type": "string",
+      "nullable": false,
+      "source_role": "primary_key",
+      "description": "Normalized calendar day sourced from Daily_Summary."
+    },
+    {
+      "name": "active_kcal",
+      "type": "number",
+      "nullable": false,
+      "source_role": "required_source_value",
+      "description": "Active kilocalories from Daily_Summary; no load metric is calculated in this module."
+    },
+    {
+      "name": "steps",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Daily steps from configured source priority."
+    },
+    {
+      "name": "resting_hr_bpm",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Resting heart rate from configured source priority."
+    },
+    {
+      "name": "resting_hr_baseline_bpm",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Resting heart rate baseline/source average when available."
+    },
+    {
+      "name": "resting_hr_avg_bpm",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Resting heart rate source average when available."
+    },
+    {
+      "name": "avg_stress",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Average stress from configured source priority."
+    },
+    {
+      "name": "max_stress",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Maximum stress source value."
+    },
+    {
+      "name": "sleep_seconds",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source sleep duration in seconds."
+    },
+    {
+      "name": "deep_sleep_seconds",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source deep sleep duration in seconds."
+    },
+    {
+      "name": "light_sleep_seconds",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source light sleep duration in seconds."
+    },
+    {
+      "name": "rem_sleep_seconds",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source REM sleep duration in seconds."
+    },
+    {
+      "name": "awake_sleep_seconds",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source awake sleep duration in seconds."
+    },
+    {
+      "name": "hrv_weekly_avg_ms",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source HRV weekly average in milliseconds."
+    },
+    {
+      "name": "hrv_last_night_avg_ms",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source last-night HRV average in milliseconds."
+    },
+    {
+      "name": "hrv_status",
+      "type": "string",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source HRV status text without interpretation."
+    },
+    {
+      "name": "hrv_baseline_balanced_low_ms",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source lower balanced HRV baseline boundary."
+    },
+    {
+      "name": "hrv_baseline_balanced_upper_ms",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source upper balanced HRV baseline boundary."
+    },
+    {
+      "name": "avg_spo2",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Average SpO2 from configured source priority."
+    },
+    {
+      "name": "avg_sleep_spo2",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Average sleep SpO2 from configured source priority."
+    },
+    {
+      "name": "lowest_sleep_spo2",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Lowest sleep SpO2 source value when available."
+    },
+    {
+      "name": "lowest_spo2",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Lowest SpO2 source value."
+    },
+    {
+      "name": "avg_spo2_7d",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Seven-day average SpO2 source value if present."
+    },
+    {
+      "name": "avg_sleep_respiration",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Average sleep respiration source value."
+    },
+    {
+      "name": "lowest_respiration",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Lowest/minimum respiration source value."
+    },
+    {
+      "name": "avg_waking_respiration",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Average waking respiration source value."
+    },
+    {
+      "name": "moderate_minutes",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Moderate intensity minutes from configured source priority."
+    },
+    {
+      "name": "vigorous_minutes",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Vigorous intensity minutes from configured source priority."
+    },
+    {
+      "name": "total_intensity_minutes_source",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source total intensity minutes if directly available; not calculated."
+    },
+    {
+      "name": "steps_distance_source",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source steps distance without unit conversion."
+    },
+    {
+      "name": "steps_goal",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Source steps goal."
+    },
+    {
+      "name": "weight_kg",
+      "type": "number",
+      "nullable": true,
+      "source_role": "optional_source_value",
+      "description": "Body weight normalized to kilograms by the explicit policy rule."
+    }
+  ],
+  "sheets": {
+    "Daily_Summary": {
+      "requirement": "required",
+      "date_field": "calendarDate",
+      "mappings": [
+        {
+          "source_column": "activeKilocalories",
+          "target_field": "active_kcal",
+          "type": "number",
+          "required": true
+        },
+        {
+          "source_column": "totalSteps",
+          "target_field": "steps",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "restingHeartRate",
+          "target_field": "resting_hr_bpm",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "restingHr",
+          "target_field": "resting_hr_bpm",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "averageStressLevel",
+          "target_field": "avg_stress",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "maxStressLevel",
+          "target_field": "max_stress",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "averageSpo2",
+          "target_field": "avg_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "lowestSpo2",
+          "target_field": "lowest_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgWakingRespirationValue",
+          "target_field": "avg_waking_respiration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgSleepRespirationValue",
+          "target_field": "avg_sleep_respiration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "moderateIntensityMinutes",
+          "target_field": "moderate_minutes",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "vigorousIntensityMinutes",
+          "target_field": "vigorous_minutes",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "intensityMinutes",
+          "target_field": "total_intensity_minutes_source",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_Sleep": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "sleepDate",
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "duration",
+          "target_field": "sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "sleepDuration",
+          "target_field": "sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "deepSleepSeconds",
+          "target_field": "deep_sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "lightSleepSeconds",
+          "target_field": "light_sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "remSleepSeconds",
+          "target_field": "rem_sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "awakeSleepSeconds",
+          "target_field": "awake_sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "awakeSeconds",
+          "target_field": "awake_sleep_seconds",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "averageSpo2",
+          "target_field": "avg_sleep_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "lowestSpo2",
+          "target_field": "lowest_sleep_spo2",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_HRV": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "weeklyAvg",
+          "target_field": "hrv_weekly_avg_ms",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "lastNightAvg",
+          "target_field": "hrv_last_night_avg_ms",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "hrvStatus",
+          "target_field": "hrv_status",
+          "type": "string",
+          "required": false
+        },
+        {
+          "source_column": "status",
+          "target_field": "hrv_status",
+          "type": "string",
+          "required": false
+        },
+        {
+          "source_column": "baselineLow",
+          "target_field": "hrv_baseline_balanced_low_ms",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "balancedLow",
+          "target_field": "hrv_baseline_balanced_low_ms",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "baselineUpper",
+          "target_field": "hrv_baseline_balanced_upper_ms",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "balancedUpper",
+          "target_field": "hrv_baseline_balanced_upper_ms",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_RHR": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "restingHeartRate",
+          "target_field": "resting_hr_bpm",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "restingHr",
+          "target_field": "resting_hr_bpm",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "rhr",
+          "target_field": "resting_hr_bpm",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "averageRestingHeartRate",
+          "target_field": "resting_hr_avg_bpm",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "baselineRestingHeartRate",
+          "target_field": "resting_hr_baseline_bpm",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_Stress": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "averageStressLevel",
+          "target_field": "avg_stress",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgStressLevel",
+          "target_field": "avg_stress",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "maxStressLevel",
+          "target_field": "max_stress",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_Respiration": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "avgSleepRespirationValue",
+          "target_field": "avg_sleep_respiration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "minRespirationValue",
+          "target_field": "lowest_respiration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgWakingRespirationValue",
+          "target_field": "avg_waking_respiration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgRespirationValue",
+          "target_field": "avg_waking_respiration",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_SpO2": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "averageSpo2",
+          "target_field": "avg_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgSpo2",
+          "target_field": "avg_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "avgSleepSpo2",
+          "target_field": "avg_sleep_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "lowestSpo2",
+          "target_field": "lowest_spo2",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "sevenDayAvgSpo2",
+          "target_field": "avg_spo2_7d",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Daily_Intensity_Minutes": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "moderateIntensityMinutes",
+          "target_field": "moderate_minutes",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "vigorousIntensityMinutes",
+          "target_field": "vigorous_minutes",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "intensityMinutes",
+          "target_field": "total_intensity_minutes_source",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "totalIntensityMinutes",
+          "target_field": "total_intensity_minutes_source",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Range_Daily_Steps": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date"
+      ],
+      "mappings": [
+        {
+          "source_column": "totalSteps",
+          "target_field": "steps",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "steps",
+          "target_field": "steps",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "distance",
+          "target_field": "steps_distance_source",
+          "type": "number",
+          "required": false
+        },
+        {
+          "source_column": "stepGoal",
+          "target_field": "steps_goal",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "Range_Body_Composition": {
+      "requirement": "optional",
+      "date_field": "calendarDate",
+      "alternate_date_fields": [
+        "date",
+        "measurementDate"
+      ],
+      "mappings": [
+        {
+          "source_column": "weight",
+          "target_field": "weight_kg",
+          "type": "body_weight",
+          "required": false
+        },
+        {
+          "source_column": "bodyWeight",
+          "target_field": "weight_kg",
+          "type": "body_weight",
+          "required": false
+        }
+      ]
+    },
+    "Activities": {
+      "requirement": "excluded",
+      "reason": "Handled exclusively by module 06_normalize_activities.",
+      "mappings": []
+    }
+  },
+  "field_source_priority": {
+    "steps": [
+      "Range_Daily_Steps",
+      "Daily_Summary"
+    ],
+    "resting_hr_bpm": [
+      "Daily_RHR",
+      "Daily_Summary"
+    ],
+    "avg_stress": [
+      "Daily_Stress",
+      "Daily_Summary"
+    ],
+    "avg_spo2": [
+      "Daily_SpO2",
+      "Daily_Summary"
+    ],
+    "avg_sleep_spo2": [
+      "Daily_Sleep",
+      "Daily_SpO2"
+    ],
+    "moderate_minutes": [
+      "Daily_Intensity_Minutes",
+      "Daily_Summary"
+    ],
+    "vigorous_minutes": [
+      "Daily_Intensity_Minutes",
+      "Daily_Summary"
+    ],
+    "avg_sleep_respiration": [
+      "Daily_Respiration",
+      "Daily_Summary"
+    ],
+    "avg_waking_respiration": [
+      "Daily_Respiration",
+      "Daily_Summary"
+    ]
+  },
+  "prohibited_derived_metrics": [
+    "rhr_delta",
+    "ln_rmssd",
+    "acute_load",
+    "chronic_load",
+    "acwr",
+    "monotony",
+    "strain",
+    "readiness",
+    "pws_components",
+    "pws_weights",
+    "pws_score"
+  ],
+  "notes": [
+    "Missing source values remain null and must not be replaced by zero.",
+    "Activities are normalized exclusively in module 06_normalize_activities.",
+    "This module produces one normalized record per valid date from Daily_Summary."
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "module_id": "01_find_input_workbook",
+  "module_name": "Find Input Workbook",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Finds local Garmin workbook candidates and deterministically selects the formal input workbook for the next pipeline module.",
+  "depends_on": [
+    "00_project_contract"
+  ],
+  "inputs": [
+    "config/project_settings.json",
+    "local filesystem paths explicitly configured as workbook search directories"
+  ],
+  "outputs": [
+    "data/pipeline/01_find_input_workbook/workbook_manifest.json",
+    "data/pipeline/01_find_input_workbook/run_manifest.json",
+    "data/pipeline/01_find_input_workbook/run_log.txt",
+    "data/pipeline/01_find_input_workbook/errors.json"
+  ],
+  "run_command": "pipeline/01_find_input_workbook/run.bat",
+  "artifact_directory": "data/pipeline/01_find_input_workbook",
+  "test_directory": "tests/01_find_input_workbook",
+  "visualization_directory": "visualization/01_find_input_workbook",
+  "prohibited_responsibilities": [
+    "read_workbook_contents",
+    "inspect_xlsx_sheets",
+    "inspect_xlsx_columns",
+    "trim_workbook",
+    "fetch_garmin_api_data",
+    "normalize_daily_records",
+    "calculate_metrics",
+    "calculate_pws",
+    "call_llm",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_input_file_metadata",
+  "notes": [
+    "The selected workbook may contain private health and activity data.",
+    "This module reports file metadata only and must not parse workbook contents."
+  ]
+}

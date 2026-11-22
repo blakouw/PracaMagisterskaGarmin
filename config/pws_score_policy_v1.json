@@ -1,0 +1,157 @@
+{
+  "policy_version": "pws_score_policy_v1",
+  "parent_policy_reference": "config/pws_policy_v1.json",
+  "source_modules": [
+    "10_compute_pws_components",
+    "11_compute_pws_weights"
+  ],
+  "score_name": "pws_deterministic",
+  "score_range": {
+    "minimum": 0,
+    "maximum": 100
+  },
+  "score_interpretation": "Deterministic Personal Wellness Score decision-support indicator based on available configured components and deterministic effective weights.",
+  "limitations": [
+    "PWS is not a medical diagnosis.",
+    "PWS is not an injury prediction.",
+    "PWS is not a professional training prescription.",
+    "PWS is based on heuristic components and explicit weighting policy.",
+    "A score computed from partial component coverage must always expose that limitation."
+  ],
+  "components": {
+    "LQ": {
+      "score_field": "lq_score",
+      "weight_field_path": "deterministic_effective_weights.LQ",
+      "interpretation": "Load Quality"
+    },
+    "REC": {
+      "score_field": "rec_score",
+      "weight_field_path": "deterministic_effective_weights.REC",
+      "interpretation": "Recovery"
+    },
+    "CAP": {
+      "score_field": "cap_score",
+      "weight_field_path": "deterministic_effective_weights.CAP",
+      "interpretation": "Capacity"
+    },
+    "VS": {
+      "score_field": "vs_score",
+      "weight_field_path": "deterministic_effective_weights.VS",
+      "interpretation": "Vital Stability"
+    }
+  },
+  "input_weight_policy": {
+    "allowed_weight_source_only": "11_compute_pws_weights.deterministic_effective_weights",
+    "required_weights_ready_field": "weights_ready_for_final_pws",
+    "must_not_recompute_weights": true,
+    "must_not_modify_weights": true,
+    "must_validate_effective_weight_sum_to": 1.0,
+    "weight_sum_tolerance": 1e-06,
+    "unavailable_component_positive_weight_policy": "fail_record_and_report_contract_violation"
+  },
+  "eligibility_policy": {
+    "compute_score_only_when": [
+      "weights_ready_for_final_pws == true",
+      "deterministic_effective_weights exists",
+      "every component with positive deterministic effective weight has a valid numeric component score in range 0 to 100",
+      "sum of deterministic effective weights equals 1.0 within configured tolerance"
+    ],
+    "ineligible_score_value": null,
+    "ineligible_status": "not_computed_insufficient_component_coverage"
+  },
+  "formula": {
+    "pws_deterministic": "sum(component_score * deterministic_effective_weight for components with positive deterministic effective weight)",
+    "component_contribution": "component_score * deterministic_effective_weight",
+    "internal_calculations": "full_precision",
+    "serialized_score_decimal_places": 2,
+    "serialized_contribution_decimal_places": 4
+  },
+  "coverage_policy": {
+    "full_coverage_component_count": 4,
+    "full_coverage_available_base_weight_sum": 1.0,
+    "coverage_fields_to_preserve": [
+      "available_components",
+      "missing_components",
+      "available_components_count",
+      "available_base_weight_sum"
+    ],
+    "coverage_tiers": [
+      {
+        "tier_id": "full",
+        "condition": "available_components_count == 4"
+      },
+      {
+        "tier_id": "partial_eligible",
+        "condition": "weights_ready_for_final_pws == true and available_components_count < 4"
+      },
+      {
+        "tier_id": "insufficient",
+        "condition": "weights_ready_for_final_pws == false"
+      }
+    ],
+    "important_note": "A numeric PWS computed from partial eligible coverage must not be presented as equivalent in completeness to a full-coverage score."
+  },
+  "labels": [
+    {
+      "label_id": "low",
+      "label": "niski",
+      "condition": "0 <= pws_deterministic < 40"
+    },
+    {
+      "label_id": "reduced",
+      "label": "obnizony",
+      "condition": "40 <= pws_deterministic < 60"
+    },
+    {
+      "label_id": "balanced",
+      "label": "stabilny",
+      "condition": "60 <= pws_deterministic < 80"
+    },
+    {
+      "label_id": "strong",
+      "label": "wysoki",
+      "condition": "80 <= pws_deterministic <= 100"
+    }
+  ],
+  "explanation_policy": {
+    "store_component_scores": true,
+    "store_effective_weights": true,
+    "store_weighted_contributions": true,
+    "store_coverage_tier": true,
+    "store_missing_components": true,
+    "store_deterministic_only_disclosure": true,
+    "must_not_generate_natural_language_coaching": true
+  },
+  "future_llm_assisted_path": {
+    "implemented_in_this_module": false,
+    "future_score_field": "pws_llm_assisted",
+    "must_remain_separate_from": "pws_deterministic",
+    "must_use_validated_llm_adjusted_weights_only": true,
+    "must_preserve_deterministic_score_unchanged": true,
+    "required_guardrails_artifact": "data/pipeline/11_compute_pws_weights/pws_weight_guardrails.json",
+    "important_note": "No LLM is called and no LLM-assisted PWS is calculated in this module."
+  },
+  "missing_values_policy": {
+    "missing_component_score": null,
+    "missing_final_score": null,
+    "do_not_replace_missing_with_zero": true,
+    "do_not_penalize_score_only_because_a_component_is_missing": true,
+    "always_expose_partial_coverage": true
+  },
+  "prohibited_outputs": [
+    "llm_adjusted_weights",
+    "llm_adjustment",
+    "priority_component",
+    "priority_recommendation",
+    "coach_message",
+    "training_recommendation",
+    "medical_diagnosis",
+    "injury_prediction"
+  ],
+  "notes": [
+    "The deterministic score is the primary auditable PWS path.",
+    "The module consumes deterministic weights from module 11 and never recomputes them.",
+    "Missing component data remains null and is exposed through coverage metadata.",
+    "A future LLM-assisted path must be separate, bounded and validated against the published guardrails."
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "missing_required_sheet_policy": "fail",
+  "unknown_columns_policy": "drop_and_report",
+  "source_type": "raw_sheet_artifacts_from_module_02",
+  "missing_required_column_policy": "warn_and_continue",
+  "column_matching_strategy": "exact_name",
+  "preserve_raw_values": true,
+  "unknown_sheets_policy": "drop_and_report",
+  "sheets": [
+    {
+      "required_columns": [
+        "calendarDate",
+        "activeKilocalories"
+      ],
+      "purpose": "Primary daily sheet defining the base daily records.",
+      "requirement": "required",
+      "optional_columns": [
+        "totalSteps",
+        "restingHeartRate",
+        "restingHr",
+        "minHeartRate",
+        "maxHeartRate",
+        "averageStressLevel",
+        "maxStressLevel",
+        "averageSpo2",
+        "lowestSpo2",
+        "avgWakingRespirationValue",
+        "avgSleepRespirationValue",
+        "moderateIntensityMinutes",
+        "vigorousIntensityMinutes",
+        "intensityMinutes"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_Summary"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Sleep duration, segments and source sleep-related metrics.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "sleepDate",
+        "duration",
+        "sleepDuration",
+        "deepSleepSeconds",
+        "lightSleepSeconds",
+        "remSleepSeconds",
+        "awakeSleepSeconds",
+        "awakeSeconds",
+        "averageSpo2",
+        "lowestSpo2"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_Sleep"
+    },
+    {
+      "required_columns": [],
+      "purpose": "HRV nightly values, weekly averages and baseline/status fields.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "weeklyAvg",
+        "lastNightAvg",
+        "hrvStatus",
+        "status",
+        "baselineLowUpper",
+        "baselineLow",
+        "baselineUpper",
+        "balancedLow",
+        "balancedUpper"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_HRV"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Resting heart rate and supporting baseline fields.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "restingHeartRate",
+        "restingHr",
+        "rhr",
+        "averageRestingHeartRate",
+        "baselineRestingHeartRate"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_RHR"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Daily stress source values.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "averageStressLevel",
+        "avgStressLevel",
+        "maxStressLevel",
+        "stressLevel"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_Stress"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Respiration source values.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "avgSleepRespirationValue",
+        "minRespirationValue",
+        "avgWakingRespirationValue",
+        "avgRespirationValue"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_Respiration"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Daily and sleep SpO2 source values.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "averageSpo2",
+        "avgSpo2",
+        "avgSleepSpo2",
+        "lowestSpo2",
+        "sevenDayAvgSpo2"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_SpO2"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Moderate, vigorous and total intensity minutes.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "moderateIntensityMinutes",
+        "vigorousIntensityMinutes",
+        "intensityMinutes",
+        "totalIntensityMinutes"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Daily_Intensity_Minutes"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Daily steps, distance and goals.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "totalSteps",
+        "steps",
+        "distance",
+        "stepGoal"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Range_Daily_Steps"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Activity records from the workbook.",
+      "requirement": "optional",
+      "optional_columns": [
+        "activityId",
+        "activityName",
+        "activityType",
+        "startTimeLocal",
+        "distance",
+        "duration",
+        "calories",
+        "averageSpeed",
+        "averageHR",
+        "maxHR",
+        "avgPower",
+        "maxPower",
+        "elevationGain",
+        "elevationLoss",
+        "hrTimeInZone1",
+        "hrTimeInZone2",
+        "hrTimeInZone3",
+        "hrTimeInZone4",
+        "hrTimeInZone5",
+        "directWorkoutRpe",
+        "directWorkoutFeel",
+        "directWorkoutRpe",
+        "directWorkoutFeel",
+        "directWorkoutRpe",
+        "directWorkoutFeel",
+        "directWorkoutRpe",
+        "directWorkoutFeel",
+        "directWorkoutRpe",
+        "directWorkoutFeel"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Activities"
+    },
+    {
+      "required_columns": [],
+      "purpose": "Body mass source measurements.",
+      "requirement": "optional",
+      "optional_columns": [
+        "calendarDate",
+        "date",
+        "measurementDate",
+        "weight",
+        "bodyWeight"
+      ],
+      "candidate_aliases": {},
+      "sheet_name": "Range_Body_Composition"
+    }
+  ],
+  "selection_mode": "explicit_allowlist",
+  "notes": [
+    "Version 1 uses exact sheet and column names only; no fuzzy matching or hidden semantic remapping is performed.",
+    "The policy should be reviewed after the first run on a real Garmin export because current development fixtures may not expose every real Garmin header.",
+    "Missing Daily_Summary is blocking. Missing optional sheets or optional columns is reported but not blocking."
+  ],
+  "perform_domain_transformations": false,
+  "policy_version": "garmin_trim_policy_v1",
+  "sheet_matching_strategy": "exact_name"
+}

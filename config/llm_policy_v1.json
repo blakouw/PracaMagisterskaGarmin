@@ -1,0 +1,61 @@
+{
+  "policy_version": "llm_policy_v1",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b",
+  "endpoint": "http://127.0.0.1:11434/v1/chat/completions",
+  "api_key_environment_variable": "OLLAMA_API_KEY",
+  "supported_modes": [
+    "off",
+    "advisory"
+  ],
+  "default_mode": "off",
+  "role": "bounded_advisory_weight_adjustment_and_explanation",
+  "allowed_input_scope": [
+    "pws_components_today",
+    "component_means_30d",
+    "component_trends",
+    "low_days_ratios",
+    "data_coverage",
+    "deterministic_weights",
+    "data_quality_warnings",
+    "recent_relevant_activity_summary",
+    "allowed_adjustment_limits"
+  ],
+  "allowed_output_scope": [
+    "recommended_priority",
+    "bounded_weight_adjustments",
+    "confidence",
+    "reason_codes",
+    "natural_language_explanation",
+    "requested_total_shift"
+  ],
+  "forbidden_behaviors": [
+    "calculate_raw_garmin_metrics",
+    "calculate_acwr",
+    "calculate_readiness",
+    "calculate_pws_components",
+    "write_unvalidated_final_weights",
+    "produce_medical_diagnosis",
+    "access_raw_secrets",
+    "access_auth_tokens",
+    "depend_on_previous_project_runtime"
+  ],
+  "weight_influence_constraints": {
+    "maximum_adjustment_per_component": 0.2,
+    "maximum_total_weight_shift": 0.4,
+    "adjustments_must_sum_to_zero": true,
+    "requires_metric_evidence": true,
+    "requires_sufficient_data_coverage": true,
+    "requires_deterministic_validation": true
+  },
+  "required_persistence_outputs": [
+    "pws_deterministic",
+    "pws_llm_assisted",
+    "llm_influence_requested",
+    "llm_influence_applied",
+    "llm_validation_report",
+    "final_weights",
+    "explanation"
+  ],
+  "fallback_required": true
+}

@@ -1,0 +1,57 @@
+{
+  "module_id": "04_garmin_activity_ingest",
+  "module_name": "Garmin Activity Ingest",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": true,
+  "responsibility": "Optionally downloads extended Garmin activity artifacts for configured activity IDs using a local tokenstore owned by the new project, without blocking the workbook-based pipeline.",
+  "depends_on": [
+    "00_project_contract"
+  ],
+  "optional_inputs_from": [
+    "03_trim_workbook"
+  ],
+  "inputs": [
+    "config/garmin_activity_ingest_v1.json",
+    "data/local_secrets/garmin_tokenstore/oauth1_token.json",
+    "data/local_secrets/garmin_tokenstore/oauth2_token.json",
+    "optional: data/pipeline/03_trim_workbook/trimmed_sheets_manifest.json",
+    "optional: data/pipeline/03_trim_workbook/trimmed_sheets/Activities.csv"
+  ],
+  "outputs": [
+    "data/pipeline/04_garmin_activity_ingest/activity_ingest_manifest.json",
+    "data/pipeline/04_garmin_activity_ingest/activities/<activity_id>/details.json",
+    "data/pipeline/04_garmin_activity_ingest/activities/<activity_id>/splits.json",
+    "data/pipeline/04_garmin_activity_ingest/activities/<activity_id>/activity.fit",
+    "data/pipeline/04_garmin_activity_ingest/activities/<activity_id>/activity.tcx",
+    "data/pipeline/04_garmin_activity_ingest/run_manifest.json",
+    "data/pipeline/04_garmin_activity_ingest/run_log.txt",
+    "data/pipeline/04_garmin_activity_ingest/errors.json"
+  ],
+  "run_command": "pipeline/04_garmin_activity_ingest/run.bat",
+  "artifact_directory": "data/pipeline/04_garmin_activity_ingest",
+  "test_directory": "tests/04_garmin_activity_ingest",
+  "visualization_directory": "visualization/04_garmin_activity_ingest",
+  "prohibited_responsibilities": [
+    "manage_application_users",
+    "implement_token_management_ui",
+    "store_token_values_in_artifacts",
+    "log_token_values",
+    "normalize_daily_records",
+    "normalize_activities",
+    "merge_workbook_and_api_activities",
+    "calculate_load_metrics",
+    "calculate_readiness",
+    "calculate_pws",
+    "call_llm",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_activity_data_and_local_secrets",
+  "notes": [
+    "This module is optional and must not block the workbook-only pipeline.",
+    "Downloaded Garmin activity files may contain private health and location data.",
+    "Previous project code may be studied as a reference and local secrets may be copied once, but runtime dependency is forbidden."
+  ]
+}

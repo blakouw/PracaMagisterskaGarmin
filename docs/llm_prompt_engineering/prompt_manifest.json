@@ -1,0 +1,47 @@
+{
+  "manifest_version": "llm_prompt_engineering_manifest_v1",
+  "created_for_project": "local_garmin_wellness_dashboard",
+  "created_at": "2026-06-10T00:00:00+02:00",
+  "runtime_prompt_currently_used_by_pipeline": "config/llm_weight_adjustment_prompt_v1.json",
+  "reference_prompts": [
+    {
+      "prompt_id": "current_runtime_pws_weight_adjustment_prompt_v1",
+      "path": "docs/llm_prompt_engineering/prompts/current_runtime_pws_weight_adjustment_prompt_v1.json",
+      "runtime_role": "captured_current_prompt_used_by_pipeline_module_13",
+      "wired_into_runtime": false,
+      "source_runtime_file": "config/llm_weight_adjustment_prompt_v1.json",
+      "related_runtime_module": "13_validate_llm_weight_influence"
+    },
+    {
+      "prompt_id": "pws_assisted_startup_prompt_v1",
+      "path": "docs/llm_prompt_engineering/prompts/pws_assisted_startup_prompt_v1.md",
+      "runtime_role": "optional_llm_assisted_pws_weight_delta_proposal",
+      "wired_into_runtime": false,
+      "related_runtime_module": "13_validate_llm_weight_influence"
+    },
+    {
+      "prompt_id": "user_conversation_startup_prompt_v1",
+      "path": "docs/llm_prompt_engineering/prompts/user_conversation_startup_prompt_v1.md",
+      "runtime_role": "future_read_only_dashboard_conversation",
+      "wired_into_runtime": false,
+      "related_runtime_module": "future_conversation_layer_not_implemented"
+    }
+  ],
+  "tool_catalog": "docs/llm_prompt_engineering/tool_catalog.json",
+  "audit_logs": [
+    "docs/llm_prompt_engineering/logs/prompt_engineering_log.md",
+    "docs/llm_prompt_engineering/logs/pws_prompt_audit_template.json",
+    "docs/llm_prompt_engineering/logs/conversation_prompt_audit_template.json",
+    "docs/llm_prompt_engineering/logs/current_runtime_prompt_snapshot.json"
+  ],
+  "reasoning_visibility_policy": {
+    "hidden_chain_of_thought_logged": false,
+    "allowed_reasoning_record": [
+      "concise_reason_summary",
+      "selected_tool_names",
+      "input_boundary_summary",
+      "validation_checks",
+      "final_decision"
+    ]
+  }
+}

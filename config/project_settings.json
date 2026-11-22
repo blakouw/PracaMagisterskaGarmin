@@ -1,0 +1,32 @@
+{
+  "project_mode": "local_single_user",
+  "architecture_mode": "modular_artifact_pipeline",
+  "primary_data_source": "garmin_workbook",
+  "optional_data_sources": [
+    "garmin_activity_api_ingest"
+  ],
+  "pipeline_root": "pipeline",
+  "tests_root": "tests",
+  "visualization_root": "visualization",
+  "pipeline_output_root": "data/pipeline",
+  "local_secrets_root": "data/local_secrets",
+  "previous_project_runtime_dependency_allowed": false,
+  "previous_project_reference_allowed": true,
+  "previous_project_one_time_secret_copy_allowed": true,
+  "default_pws_mode": "deterministic",
+  "supported_pws_modes": [
+    "deterministic",
+    "llm_assisted"
+  ],
+  "llm_enabled_by_default": false,
+  "input_workbook": {
+    "filename_pattern": "garmin_export_*.xlsx",
+    "search_directories": [
+      ".",
+      "data/input"
+    ],
+    "recursive": false,
+    "selection_strategy": "first_path_sorted_ascending",
+    "require_exactly_one_match": false
+  }
+}

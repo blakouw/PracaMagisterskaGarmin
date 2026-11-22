@@ -1,0 +1,42 @@
+{
+  "module_id": "08_compute_load_metrics",
+  "module_name": "Compute Load Metrics",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Computes transparent load metrics using complete daily session-RPE when available and an explicit active-kilocalorie fallback otherwise, including rolling acute/chronic load, ACWR, EWMA, monotony and strain without calculating readiness or PWS.",
+  "depends_on": ["00_project_contract", "05_normalize_daily_records", "06_normalize_activities", "07_build_daily_features"],
+  "optional_inputs_from": ["06_normalize_activities"],
+  "inputs": [
+    "config/load_metrics_policy_v1.json",
+    "data/pipeline/07_build_daily_features/daily_features.json",
+    "data/pipeline/07_build_daily_features/daily_features_schema.json",
+    "data/pipeline/07_build_daily_features/daily_features_quality_report.json",
+    "data/pipeline/07_build_daily_features/daily_features_lineage.json",
+    "optional: data/pipeline/06_normalize_activities/activities_normalized.json"
+  ],
+  "outputs": [
+    "data/pipeline/08_compute_load_metrics/load_metrics.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics.csv",
+    "optional: data/pipeline/08_compute_load_metrics/load_metrics.parquet",
+    "data/pipeline/08_compute_load_metrics/load_metrics_schema.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_quality_report.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_lineage.json",
+    "data/pipeline/08_compute_load_metrics/run_manifest.json",
+    "data/pipeline/08_compute_load_metrics/run_log.txt",
+    "data/pipeline/08_compute_load_metrics/errors.json"
+  ],
+  "run_command": "pipeline/08_compute_load_metrics/run.bat",
+  "artifact_directory": "data/pipeline/08_compute_load_metrics",
+  "test_directory": "tests/08_compute_load_metrics",
+  "visualization_directory": "visualization/08_compute_load_metrics",
+  "prohibited_responsibilities": ["find_input_workbook", "parse_xlsx_zip_xml", "trim_workbook", "download_garmin_api_data", "normalize_daily_records", "normalize_activities", "build_base_daily_features", "use_non_configured_load_source", "calculate_rhr_delta", "calculate_ln_rmssd", "calculate_readiness", "calculate_pws_components", "calculate_pws_weights", "calculate_pws_score", "call_llm", "generate_training_recommendations", "build_dashboard_payload", "implement_api_server", "implement_ui", "depend_on_previous_project_runtime"],
+  "data_sensitivity": "private_health_activity_and_training_data",
+  "notes": [
+    "Daily session-RPE is used only when every activity on that date has valid RPE and duration.",
+    "Any incomplete RPE day retains active_kcal as an explicit fallback; missing RPE never becomes zero.",
+    "The selected source is stored per day because session-RPE and active kilocalories are different proxy units.",
+    "Rolling windows use calendar days and require complete configured coverage.",
+    "ACWR zones are descriptive heuristic labels and not medical or injury-risk diagnoses."
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "policy_version": "dashboard_snapshot_api_policy_v1",
+  "purpose": "Expose the currently published local dashboard snapshot through stable local HTTP endpoints and provide an ephemeral local LLM conversation endpoint that explains already computed dashboard data without recomputing or modifying analytical data.",
+  "source_snapshot": {
+    "directory": "data/published/dashboard_snapshots/current",
+    "required_files": [
+      "dashboard_payload.json",
+      "dashboard_time_series.csv",
+      "dashboard_payload_schema.json",
+      "dashboard_payload_quality_report.json",
+      "dashboard_payload_lineage.json",
+      "snapshot_manifest.json",
+      "snapshot_source_hashes.json",
+      "snapshot_status.json"
+    ],
+    "optional_files": [
+      "dashboard_time_series.parquet"
+    ],
+    "read_source_policy": "current_snapshot_only_for_runtime_endpoints"
+  },
+  "runtime": {
+    "local_only": true,
+    "default_host": "127.0.0.1",
+    "default_port": 8765,
+    "allow_host_override": false,
+    "allow_port_override_via_cli": true,
+    "approved_for_public_exposure": false,
+    "approved_for_lan_exposure": false
+  },
+  "http_policy": {
+    "read_only": true,
+    "allowed_methods": [
+      "GET",
+      "POST"
+    ],
+    "disallowed_methods": [
+      "PUT",
+      "PATCH",
+      "DELETE"
+    ],
+    "serve_static_frontend": false,
+    "trigger_pipeline_execution": false,
+    "modify_snapshot": false,
+    "download_raw_private_sources": false,
+    "allowed_post_endpoints": [
+      "/api/v1/dashboard/chat"
+    ],
+    "chat_endpoint_modifies_snapshot": false,
+    "chat_endpoint_triggers_pipeline": false
+  },
+  "cors_policy": {
+    "enabled_by_default": false,
+    "allow_wildcard_origins": false,
+    "future_local_ui_origins_may_be_explicitly_configured_later": true
+  },
+  "snapshot_validation_on_startup": {
+    "required": true,
+    "require_all_required_files": true,
+    "require_snapshot_status_payload_ready": true,
+    "require_manifest_primary_score_type": "deterministic",
+    "require_optional_assisted_not_replace_primary": true,
+    "require_hash_artifact_present": true,
+    "recalculate_analytical_values": false
+  },
+  "primary_score_policy": {
+    "primary_score_type": "deterministic",
+    "assisted_score_role": "optional_comparison_variant_only",
+    "assisted_score_must_never_replace_primary": true
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v1/health",
+      "purpose": "Return API liveness and snapshot availability status."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/snapshot/status",
+      "purpose": "Return the small published snapshot status projection."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/snapshot/manifest",
+      "purpose": "Return the published snapshot manifest."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/dashboard",
+      "purpose": "Return the complete current dashboard payload."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/dashboard/current-state",
+      "purpose": "Return current_state from the dashboard payload."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/dashboard/time-series",
+      "purpose": "Return presentation time series from the dashboard payload with optional read-only date filtering."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/dashboard/quality",
+      "purpose": "Return quality_and_coverage from the dashboard payload."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/dashboard/disclosures",
+      "purpose": "Return disclosures from the dashboard payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/dashboard/chat",
+      "purpose": "Send one local dashboard conversation message to the local LLM using minimal already-computed dashboard context. Does not modify snapshot or trigger pipeline."
+    }
+  ],
+  "time_series_query_policy": {
+    "allowed_optional_query_parameters": [
+      "date_from",
+      "date_to",
+      "limit"
+    ],
+    "date_format": "YYYY-MM-DD",
+    "default_sort_order": "ascending_by_date",
+    "filtering_is_presentation_only": true,
+    "must_not_impute_missing_values": true,
+    "must_not_recalculate_values": true,
+    "maximum_limit": 10000
+  },
+  "response_policy": {
+    "json_utf8": true,
+    "include_snapshot_id_in_response_metadata_where_appropriate": true,
+    "preserve_null_values": true,
+    "do_not_replace_null_with_zero": true
+  },
+  "error_policy": {
+    "snapshot_missing_http_status": 503,
+    "snapshot_invalid_http_status": 503,
+    "resource_not_found_http_status": 404,
+    "invalid_query_parameter_http_status": 400,
+    "method_not_allowed_http_status": 405,
+    "do_not_expose_private_filesystem_paths_in_http_errors": true,
+    "do_not_expose_stack_traces_in_http_responses": true
+  },
+  "runtime_artifact_policy": {
+    "write_startup_validation_artifacts": true,
+    "artifact_directory": "data/pipeline/17_local_api_server",
+    "write_request_logs_containing_private_payloads": false,
+    "write_access_logs_by_default": false
+  },
+  "privacy_policy": {
+    "served_data_is_private": true,
+    "local_machine_use_only": true,
+    "do_not_expose_over_network": true,
+    "do_not_serve_raw_garmin_sources": true,
+    "do_not_serve_tokens_or_secrets": true,
+    "do_not_serve_raw_llm_responses": false,
+    "chat_responses_are_ephemeral": true,
+    "chat_must_use_local_llm_endpoint_only": true
+  },
+  "prohibited_responsibilities": [
+    "implement_authentication",
+    "implement_user_profile",
+    "implement_garmin_token_pipeline",
+    "implement_write_endpoints",
+    "implement_pipeline_trigger_endpoints",
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "recompute_pws_weights",
+    "recompute_pws_deterministic",
+    "recompute_pws_llm_assisted",
+    "generate_coaching",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "implement_frontend",
+    "public_deployment_configuration",
+    "call_llm_for_recomputing_scores"
+  ],
+  "limitations": [
+    "This API is local-only and read-only.",
+    "This API is not approved for public or LAN exposure.",
+    "The API exposes already published private derived wellness data.",
+    "Deterministic PWS remains the primary score.",
+    "An optional LLM-assisted score, when available, remains a separately labelled comparison variant.",
+    "The chat endpoint is local-only, ephemeral, and must not modify snapshots or trigger pipeline execution."
+  ]
+}

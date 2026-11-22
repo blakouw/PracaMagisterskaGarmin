@@ -1,0 +1,91 @@
+{
+  "tool_catalog_version": "llm_tool_catalog_v1",
+  "scope": "Prompt-engineering reference for local LLM use only.",
+  "shared_forbidden_tools": [
+    "garmin_api_sync",
+    "garmin_token_refresh",
+    "run_pipeline",
+    "modify_snapshot",
+    "write_dashboard_data",
+    "public_network_exposure",
+    "authentication_or_profile_management",
+    "medical_diagnosis_generator",
+    "injury_prediction_generator",
+    "training_prescription_generator"
+  ],
+  "pws_assisted_prompt_tools": [
+    {
+      "name": "structured_pws_context",
+      "type": "provided_context",
+      "source": "pipeline/13_validate_llm_weight_influence",
+      "description": "A minimal JSON context containing one eligible date, component scores, deterministic weights, coverage and guardrail limits.",
+      "read_only": true,
+      "raw_private_data_access": false
+    },
+    {
+      "name": "bounded_weight_delta_response",
+      "type": "strict_json_response_contract",
+      "description": "The only allowed output mechanism. Returns no_adjustment or proposed deltas for LQ, REC, CAP and VS.",
+      "read_only": true,
+      "raw_private_data_access": false
+    },
+    {
+      "name": "no_adjustment_fallback",
+      "type": "strict_json_response_contract",
+      "description": "Required fallback when no bounded, evidence-backed redistribution is justified.",
+      "read_only": true,
+      "raw_private_data_access": false
+    }
+  ],
+  "user_conversation_prompt_tools": [
+    {
+      "name": "dashboard_health",
+      "method": "GET",
+      "endpoint": "/api/v1/health",
+      "description": "Checks whether the local read-only dashboard API is available."
+    },
+    {
+      "name": "snapshot_status",
+      "method": "GET",
+      "endpoint": "/api/v1/snapshot/status",
+      "description": "Returns current snapshot readiness, latest data date and primary score status."
+    },
+    {
+      "name": "snapshot_manifest",
+      "method": "GET",
+      "endpoint": "/api/v1/snapshot/manifest",
+      "description": "Returns current snapshot metadata and lineage identifiers."
+    },
+    {
+      "name": "dashboard_payload",
+      "method": "GET",
+      "endpoint": "/api/v1/dashboard",
+      "description": "Returns the complete local dashboard payload when a full read-only view is needed."
+    },
+    {
+      "name": "dashboard_current_state",
+      "method": "GET",
+      "endpoint": "/api/v1/dashboard/current-state",
+      "description": "Returns current deterministic PWS, optional assisted variant, readiness, components, weights and load metrics."
+    },
+    {
+      "name": "dashboard_time_series",
+      "method": "GET",
+      "endpoint": "/api/v1/dashboard/time-series",
+      "description": "Returns already computed time-series values for charting and read-only explanation."
+    },
+    {
+      "name": "dashboard_quality",
+      "method": "GET",
+      "endpoint": "/api/v1/dashboard/quality",
+      "description": "Returns coverage, missing-data and quality information already produced by upstream modules."
+    },
+    {
+      "name": "dashboard_disclosures",
+      "method": "GET",
+      "endpoint": "/api/v1/dashboard/disclosures",
+      "description": "Returns disclaimers and interpretation limits for the dashboard."
+    }
+  ]
+}
+

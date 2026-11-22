@@ -1,0 +1,119 @@
+{
+  "policy_version": "dashboard_snapshot_policy_v1",
+  "purpose": "Publish immutable local dashboard payload snapshots and an atomically replaceable current snapshot for future API or UI consumption without recomputing analytical results.",
+  "source_module": "15_build_dashboard_payload",
+  "snapshot_scope": "local_private_presentation_artifacts_only",
+  "required_source_files": [
+    "dashboard_payload.json",
+    "dashboard_time_series.csv",
+    "dashboard_payload_schema.json",
+    "dashboard_payload_quality_report.json",
+    "dashboard_payload_lineage.json"
+  ],
+  "optional_source_files": [
+    "dashboard_time_series.parquet"
+  ],
+  "source_validation": {
+    "require_payload_ready_for_next_module": true,
+    "require_quality_report_ready_for_next_module": true,
+    "required_payload_sections": [
+      "metadata",
+      "current_state",
+      "time_series",
+      "quality_and_coverage",
+      "disclosures"
+    ],
+    "require_primary_pws_score_type": "deterministic",
+    "assisted_variant_must_not_replace_primary": true
+  },
+  "snapshot_id_policy": {
+    "format": "dashboard_<latest_date>_<published_at_utc_compact>",
+    "latest_date_source": "dashboard_payload.metadata.latest_date",
+    "published_at_format": "YYYYMMDDTHHMMSSffffffZ",
+    "must_be_unique": true,
+    "must_not_overwrite_existing_history_snapshot": true
+  },
+  "output_directories": {
+    "root": "data/published/dashboard_snapshots",
+    "history": "data/published/dashboard_snapshots/history",
+    "current": "data/published/dashboard_snapshots/current",
+    "staging": "data/published/dashboard_snapshots/.staging",
+    "current_next": "data/published/dashboard_snapshots/.current_next"
+  },
+  "snapshot_files": {
+    "copied_required_artifacts": [
+      "dashboard_payload.json",
+      "dashboard_time_series.csv",
+      "dashboard_payload_schema.json",
+      "dashboard_payload_quality_report.json",
+      "dashboard_payload_lineage.json"
+    ],
+    "copied_optional_artifacts": [
+      "dashboard_time_series.parquet"
+    ],
+    "generated_snapshot_artifacts": [
+      "snapshot_manifest.json",
+      "snapshot_source_hashes.json",
+      "snapshot_status.json"
+    ]
+  },
+  "hash_policy": {
+    "algorithm": "sha256",
+    "hash_required_source_files": true,
+    "hash_optional_source_files_when_present": true,
+    "verify_hash_after_copy": true,
+    "hash_generated_manifest_files": false
+  },
+  "publication_policy": {
+    "write_history_snapshot_first": true,
+    "history_snapshot_is_immutable": true,
+    "publish_current_after_history_success": true,
+    "current_snapshot_replaces_previous_current": true,
+    "use_staging_before_publish": true,
+    "do_not_publish_partial_current_snapshot": true,
+    "preserve_history_if_current_publish_fails": true
+  },
+  "retention_policy": {
+    "automatic_history_deletion_enabled": false,
+    "important_note": "This module does not delete historical snapshots. Any future retention policy requires separate approval."
+  },
+  "primary_and_assisted_boundary": {
+    "primary_score_type": "deterministic",
+    "assisted_score_is_optional_variant_only": true,
+    "snapshot_must_not_modify_either_score": true
+  },
+  "privacy_policy": {
+    "snapshot_is_private": true,
+    "local_storage_only": true,
+    "must_be_gitignored": true,
+    "must_not_contain_secrets": true,
+    "must_not_contain_raw_garmin_sources": true,
+    "must_not_contain_llm_raw_responses": true
+  },
+  "prohibited_responsibilities": [
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "recompute_pws_weights",
+    "recompute_pws_deterministic",
+    "recompute_pws_llm_assisted",
+    "call_llm",
+    "generate_coaching",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "implement_api_server",
+    "implement_http_routes",
+    "implement_user_interface",
+    "implement_authentication",
+    "implement_user_profile",
+    "implement_garmin_token_pipeline",
+    "delete_snapshot_history_automatically"
+  ],
+  "limitations": [
+    "A snapshot is a published copy of previously computed presentation artifacts and does not calculate analytical results.",
+    "Deterministic PWS remains the primary score exactly as received from the dashboard payload.",
+    "An optional LLM-assisted score remains a separate labelled variant exactly as received from the dashboard payload.",
+    "Snapshots contain private derived wellness information and must remain local."
+  ]
+}

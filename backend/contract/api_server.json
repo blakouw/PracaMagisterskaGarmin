@@ -1,0 +1,79 @@
+{
+  "module_id": "17_local_api_server",
+  "module_name": "Local API Server",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Serves the currently published dashboard snapshot through local-only HTTP endpoints and provides an ephemeral local LLM dashboard conversation endpoint, preserving deterministic PWS as the primary score and exposing optional assisted PWS only as a separate upstream-validated variant without recomputing or modifying analytical data.",
+  "depends_on": [
+    "00_project_contract",
+    "16_persist_local_snapshot"
+  ],
+  "optional_inputs_from": [],
+  "inputs": [
+    "config/dashboard_snapshot_api_policy_v1.json",
+    "config/dashboard_snapshot_policy_v1.json",
+    "data/published/dashboard_snapshots/current/dashboard_payload.json",
+    "data/published/dashboard_snapshots/current/snapshot_manifest.json",
+    "data/published/dashboard_snapshots/current/snapshot_status.json",
+    "data/published/dashboard_snapshots/current/snapshot_source_hashes.json",
+    "data/published/dashboard_snapshots/current/dashboard_payload_schema.json",
+    "data/published/dashboard_snapshots/current/dashboard_payload_quality_report.json",
+    "data/published/dashboard_snapshots/current/dashboard_payload_lineage.json",
+    "data/published/dashboard_snapshots/current/dashboard_time_series.csv",
+    "optional: data/published/dashboard_snapshots/current/dashboard_time_series.parquet"
+  ],
+  "outputs": [
+    "data/pipeline/17_local_api_server/api_startup_validation.json",
+    "data/pipeline/17_local_api_server/api_contract_schema.json",
+    "data/pipeline/17_local_api_server/api_quality_report.json",
+    "data/pipeline/17_local_api_server/api_lineage.json",
+    "data/pipeline/17_local_api_server/run_manifest.json",
+    "data/pipeline/17_local_api_server/run_log.txt",
+    "data/pipeline/17_local_api_server/errors.json"
+  ],
+  "runtime": {
+    "protocol": "http",
+    "host": "127.0.0.1",
+    "default_port": 8765,
+    "local_only": true,
+    "read_only": true,
+    "public_exposure_approved": false,
+    "snapshot_read_only": true,
+    "ephemeral_llm_chat_enabled": true
+  },
+  "run_command": "pipeline/17_local_api_server/run.bat",
+  "artifact_directory": "data/pipeline/17_local_api_server",
+  "test_directory": "tests/17_local_api_server",
+  "visualization_directory": "visualization/17_local_api_server",
+  "prohibited_responsibilities": [
+    "implement_authentication",
+    "implement_user_profile",
+    "implement_garmin_token_pipeline",
+    "implement_write_endpoints",
+    "implement_pipeline_trigger_endpoints",
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "recompute_pws_weights",
+    "recompute_pws_deterministic",
+    "recompute_pws_llm_assisted",
+    "generate_coaching_message",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "implement_frontend",
+    "implement_public_deployment",
+    "depend_on_previous_project_runtime",
+    "call_llm_for_recomputing_scores"
+  ],
+  "data_sensitivity": "private_locally_served_derived_health_activity_training_and_wellness_presentation_data",
+  "notes": [
+    "This API is local-only and read-only.",
+    "It binds to 127.0.0.1 by default and is not approved for public or LAN exposure.",
+    "It consumes the published current snapshot only and does not trigger or recompute pipeline outputs.",
+    "Deterministic PWS remains the primary score.",
+    "Optional assisted PWS may be exposed only as a separately labelled upstream-validated variant.",
+    "The local chat endpoint is ephemeral and does not write to snapshots or trigger the pipeline."
+  ]
+}

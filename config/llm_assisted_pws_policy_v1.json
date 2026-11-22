@@ -1,0 +1,179 @@
+{
+  "policy_version": "llm_assisted_pws_policy_v1",
+  "source_modules": [
+    "10_compute_pws_components",
+    "11_compute_pws_weights",
+    "12_compute_pws_score"
+  ],
+  "module_optional": true,
+  "deterministic_path_authority": {
+    "deterministic_score_field": "pws_deterministic",
+    "deterministic_weights_field": "pws_deterministic_weights",
+    "must_never_be_modified": true,
+    "must_remain_available_without_llm": true
+  },
+  "execution_policy": {
+    "maximum_llm_calls_per_eligible_date": 1,
+    "maximum_llm_calls_per_run": "number_of_eligible_dates",
+    "default_target_selection": "all_eligible_dates_in_ascending_order",
+    "explicit_target_cli_argument": "--date YYYY-MM-DD",
+    "historical_batch_processing_allowed": true,
+    "backfill_allowed": true,
+    "automatic_rerun_of_prior_dates_allowed": true,
+    "execution_order": "ascending_date",
+    "one_independent_context_per_date": true
+  },
+  "llm_runtime": {
+    "enabled_by_default": false,
+    "enable_cli_argument": "--enable-llm",
+    "provider_source": "config/llm_policy_v1.json",
+    "credentials_source": "environment_variable_only",
+    "default_api_key_environment_variable": "OPENAI_API_KEY",
+    "temperature": 0,
+    "response_format": "strict_json",
+    "timeout_seconds": 60,
+    "maximum_retry_count": 1
+  },
+  "eligibility_policy": {
+    "required_record_conditions": [
+      "pws_deterministic_computed == true",
+      "llm_adjustment_eligible == true",
+      "pws_deterministic is numeric",
+      "pws_deterministic_weights exist",
+      "at least three components are available"
+    ],
+    "ineligible_behavior": "do_not_call_llm_and_write_skipped_status"
+  },
+  "allowed_llm_role": "propose_evidence_proportional_explainable_reprioritization_of_existing_available_component_weights_within_hard_constraints",
+  "allowed_context_fields": [
+    "date",
+    "available_components",
+    "missing_components",
+    "component_scores",
+    "component_statuses",
+    "component_coverage_information",
+    "pws_deterministic",
+    "deterministic_effective_weights",
+    "overlap_disclosures",
+    "guardrail_limits",
+    "approved_user_goal_context"
+  ],
+  "forbidden_context_fields": [
+    "raw_daily_health_records",
+    "raw_garmin_api_payloads",
+    "raw_workbook_rows",
+    "fit_files",
+    "tcx_files",
+    "api_tokens",
+    "credentials",
+    "full_private_history"
+  ],
+  "proposal_contract": {
+    "decision_values": [
+      "no_adjustment",
+      "propose_adjustment"
+    ],
+    "required_fields": [
+      "decision",
+      "reason_summary",
+      "proposed_weight_deltas"
+    ],
+    "component_keys": [
+      "LQ",
+      "REC",
+      "CAP",
+      "VS"
+    ],
+    "important_note": "The LLM proposes deltas only. It does not calculate authoritative PWS."
+  },
+  "validation_policy": {
+    "validation_mode": "audit_then_normalize_guardrail_violating_numeric_proposal",
+    "maximum_absolute_delta_per_component": 0.2,
+    "maximum_total_positive_weight_shift": 0.2,
+    "maximum_total_absolute_delta": 0.4,
+    "required_delta_sum": 0.0,
+    "delta_sum_tolerance": 1e-06,
+    "resulting_weights_must_sum_to": 1.0,
+    "weight_sum_tolerance": 1e-06,
+    "no_negative_weights": true,
+    "unavailable_component_delta_must_equal_zero": true,
+    "unavailable_component_resulting_weight_must_equal_zero": true,
+    "must_respect_overlap_controls": true,
+    "must_preserve_component_availability": true,
+    "must_preserve_pws_eligibility": true,
+    "rejected_proposal_behavior": "preserve_raw_proposal_and_violations_then_project_available_target_weights_to_a_nonnegative_unit_sum_distribution",
+    "normalization_policy": {
+      "enabled": true,
+      "schema_valid_numeric_proposal_required": true,
+      "zero_unavailable_components_before_normalization": true,
+      "clip_negative_target_weights_to_zero": true,
+      "normalize_available_target_weights_to_sum_one": true,
+      "preserve_raw_proposal": true,
+      "preserve_all_guardrail_violations_as_warnings": true,
+      "overlap_violations_are_warnings_after_normalization": true,
+      "deterministic_weights_remain_unchanged": true
+    }
+  },
+  "assisted_score_policy": {
+    "score_field": "pws_llm_assisted",
+    "compute_only_after_validated_or_audited_normalized_weight_proposal": true,
+    "formula": "sum(component_score * validated_llm_adjusted_weight for available components)",
+    "must_be_calculated_locally_not_by_llm": true,
+    "serialized_score_decimal_places": 2,
+    "store_delta_from_deterministic": true,
+    "store_deterministic_score_unchanged": true
+  },
+  "labels_policy": {
+    "reuse_deterministic_pws_labels": true,
+    "labels_source": "config/pws_score_policy_v1.json"
+  },
+  "approved_user_goal_context_policy": {
+    "optional_local_file": "data/local_context/llm_user_goal_context.json",
+    "allowed_fields": [
+      "goal_type",
+      "goal_summary",
+      "valid_from",
+      "valid_until"
+    ],
+    "allowed_goal_types": [
+      "recovery_focus",
+      "return_after_break",
+      "race_preparation",
+      "maintenance"
+    ],
+    "maximum_goal_summary_characters": 300,
+    "send_only_when_explicitly_present_and_valid": true
+  },
+  "privacy_policy": {
+    "minimum_structured_context_only": true,
+    "do_not_send_raw_health_history": true,
+    "do_not_send_tokens_or_secrets": true,
+    "do_not_send_raw_files": true,
+    "audit_prompt_payload_without_secrets": true,
+    "generated_llm_artifacts_are_private": true
+  },
+  "prohibited_actions": [
+    "modify_pws_deterministic",
+    "modify_deterministic_weights",
+    "modify_component_scores",
+    "assign_weight_to_unavailable_component",
+    "replace_missing_component_with_zero",
+    "bypass_guardrails",
+    "send_full_private_history_in_one_request",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "generate_coaching_message",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui"
+  ],
+  "notes": [
+    "The deterministic PWS path remains primary and auditable.",
+    "By default the LLM-assisted path evaluates every eligible date independently in ascending order, with one bounded request per date.",
+    "The --date argument remains available for a single-date diagnostic run.",
+    "A guardrail-violating numeric proposal is retained verbatim, audited and projected to valid assisted weights; deterministic outputs remain unchanged.",
+    "Per-date conversation audit logs store the system prompt, structured context, parsed model response, validation findings and effective normalized weights without storing hidden reasoning.",
+    "The LLM may propose bounded weight deltas only; final validation and score calculation remain deterministic local code."
+  ]
+}

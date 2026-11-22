@@ -1,0 +1,61 @@
+{
+  "policy_version": "pws_policy_v1",
+  "score_range": {
+    "minimum": 0,
+    "maximum": 100
+  },
+  "components": {
+    "LQ": "Load Quality",
+    "REC": "Recovery",
+    "CAP": "Capacity",
+    "VS": "Vital Stability"
+  },
+  "formula": "PWS_t = 100 * (wLQ * LQ_t + wREC * REC_t + wCAP * CAP_t + wVS * VS_t)",
+  "base_weights": {
+    "LQ": 0.25,
+    "REC": 0.25,
+    "CAP": 0.25,
+    "VS": 0.25
+  },
+  "weight_constraints": {
+    "weights_must_be_non_negative": true,
+    "weights_must_sum_to": 1.0,
+    "minimum_component_weight": 0.15,
+    "maximum_component_weight": 0.40
+  },
+  "deterministic_calibration": {
+    "history_window_days": 30,
+    "recent_window_days": 7,
+    "low_component_threshold": 0.60,
+    "balanced_threshold": 0.75,
+    "minimum_coverage_for_priority": 0.70,
+    "deficit_factor": 0.20,
+    "negative_trend_factor": 0.30,
+    "persistence_factor": 0.10,
+    "previous_weight_smoothing": 0.80,
+    "calculated_weight_smoothing": 0.20
+  },
+  "statuses": [
+    "insufficient_history",
+    "balanced",
+    "dominant_limitation",
+    "systemic_decline"
+  ],
+  "required_outputs_in_future_module": [
+    "pws_components",
+    "deterministic_weights",
+    "pws_deterministic",
+    "priority",
+    "priority_status",
+    "data_coverage",
+    "calculation_explanation",
+    "rules_version"
+  ],
+  "safety_rules": [
+    "PWS is a training decision-support indicator and not a medical diagnosis.",
+    "Missing data must not automatically be interpreted as a zero health score when calculating priorities.",
+    "Low data coverage must be surfaced explicitly.",
+    "LLM must not calculate raw PWS components.",
+    "LLM must not directly write unvalidated final weights."
+  ]
+}

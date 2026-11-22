@@ -1,0 +1,59 @@
+{
+  "module_id": "05_normalize_daily_records",
+  "module_name": "Normalize Daily Records",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Normalizes approved daily Garmin sheet artifacts into one stable daily record model keyed by dates from Daily_Summary, preserving missing values as null and without computing derived metrics.",
+  "depends_on": [
+    "00_project_contract",
+    "01_find_input_workbook",
+    "02_read_xlsx_workbook",
+    "03_trim_workbook"
+  ],
+  "optional_inputs_from": [],
+  "inputs": [
+    "data/pipeline/03_trim_workbook/trimmed_sheets_manifest.json",
+    "data/pipeline/03_trim_workbook/trimmed_sheets/*.csv excluding Activities.csv",
+    "config/garmin_daily_normalization_v1.json"
+  ],
+  "outputs": [
+    "data/pipeline/05_normalize_daily_records/daily_records.json",
+    "data/pipeline/05_normalize_daily_records/daily_records.csv",
+    "data/pipeline/05_normalize_daily_records/daily_records_schema.json",
+    "data/pipeline/05_normalize_daily_records/data_quality_report.json",
+    "data/pipeline/05_normalize_daily_records/run_manifest.json",
+    "data/pipeline/05_normalize_daily_records/run_log.txt",
+    "data/pipeline/05_normalize_daily_records/errors.json"
+  ],
+  "run_command": "pipeline/05_normalize_daily_records/run.bat",
+  "artifact_directory": "data/pipeline/05_normalize_daily_records",
+  "test_directory": "tests/05_normalize_daily_records",
+  "visualization_directory": "visualization/05_normalize_daily_records",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "trim_workbook",
+    "fetch_garmin_api_data",
+    "normalize_activities",
+    "merge_activity_sources",
+    "calculate_rhr_delta",
+    "calculate_ln_rmssd",
+    "calculate_load_metrics",
+    "calculate_acwr",
+    "calculate_readiness",
+    "calculate_pws",
+    "call_llm",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_and_activity_data",
+  "notes": [
+    "Daily records may contain private health and activity data and must remain local.",
+    "Missing values must remain null and must not be replaced with zero.",
+    "Activities are explicitly excluded and will be handled only by module 06_normalize_activities.",
+    "Optional Garmin API ingest artifacts are explicitly excluded from this module."
+  ]
+}

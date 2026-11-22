@@ -1,0 +1,53 @@
+{
+  "module_id": "03_trim_workbook",
+  "module_name": "Trim Workbook",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Selects explicitly approved Garmin sheets and columns from raw sheet artifacts, writes trimmed CSV artifacts and generates auditable KEEP/DROP reports without domain normalization or metric computation.",
+  "depends_on": [
+    "00_project_contract",
+    "01_find_input_workbook",
+    "02_read_xlsx_workbook"
+  ],
+  "inputs": [
+    "data/pipeline/02_read_xlsx_workbook/workbook_structure.json",
+    "data/pipeline/02_read_xlsx_workbook/raw_sheets_manifest.json",
+    "data/pipeline/02_read_xlsx_workbook/raw_sheets/*.json",
+    "config/garmin_trim_policy_v1.json"
+  ],
+  "outputs": [
+    "data/pipeline/03_trim_workbook/trimmed_sheets/*.csv",
+    "data/pipeline/03_trim_workbook/trimmed_sheets_manifest.json",
+    "data/pipeline/03_trim_workbook/trim_report.md",
+    "data/pipeline/03_trim_workbook/trim_summary.json",
+    "data/pipeline/03_trim_workbook/run_manifest.json",
+    "data/pipeline/03_trim_workbook/run_log.txt",
+    "data/pipeline/03_trim_workbook/errors.json"
+  ],
+  "run_command": "pipeline/03_trim_workbook/run.bat",
+  "artifact_directory": "data/pipeline/03_trim_workbook",
+  "test_directory": "tests/03_trim_workbook",
+  "visualization_directory": "visualization/03_trim_workbook",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "fetch_garmin_api_data",
+    "normalize_daily_records",
+    "normalize_activities",
+    "join_sheets_by_calendar_date",
+    "convert_units",
+    "calculate_load_metrics",
+    "calculate_readiness",
+    "calculate_pws",
+    "call_llm",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_and_activity_data",
+  "notes": [
+    "Trimmed sheet artifacts may contain private Garmin health and activity data and must remain local.",
+    "This module performs explicit KEEP/DROP selection only. Data normalization belongs exclusively to later modules."
+  ]
+}

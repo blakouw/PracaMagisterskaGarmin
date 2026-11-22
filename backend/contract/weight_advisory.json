@@ -1,0 +1,38 @@
+{
+  "module_id": "12_llm_weight_advisory",
+  "module_name": "LLM Weight Advisory",
+  "version": "1.0.0",
+  "status": "planned",
+  "optional": true,
+  "responsibility": "Optionally asks an LLM for bounded advisory PWS weight adjustments using controlled context only.",
+  "depends_on": [
+    "11_compute_pws_weights"
+  ],
+  "inputs": [
+    "data/pipeline/11_compute_pws_weights/pws_weights.json",
+    "data/pipeline/11_compute_pws_weights/pws_weight_guardrails.json",
+    "config/llm_policy_v1.json"
+  ],
+  "outputs": [
+    "data/pipeline/12_llm_weight_advisory/llm_weight_advisory.json",
+    "data/pipeline/12_llm_weight_advisory/run_manifest.json",
+    "data/pipeline/12_llm_weight_advisory/run_log.txt",
+    "data/pipeline/12_llm_weight_advisory/errors.json"
+  ],
+  "run_command": null,
+  "artifact_directory": "data/pipeline/12_llm_weight_advisory",
+  "test_directory": "tests/12_llm_weight_advisory",
+  "visualization_directory": "visualization/12_llm_weight_advisory",
+  "prohibited_responsibilities": [
+    "calculate_raw_garmin_metrics",
+    "calculate_readiness",
+    "calculate_pws_components",
+    "write_unvalidated_final_weights",
+    "produce_medical_diagnosis",
+    "access_raw_secrets"
+  ],
+  "data_sensitivity": "private_bounded_advisory_context",
+  "notes": [
+    "Optional module. Implementation deferred until module 12."
+  ]
+}

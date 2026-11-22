@@ -1,0 +1,99 @@
+{
+  "module_id": "18_angular_dashboard_ui",
+  "schema_version": "local_dashboard_ui_schema_v1",
+  "policy_version": "local_dashboard_ui_policy_v1",
+  "runtime": {
+    "type": "local_web_frontend",
+    "local_only": true,
+    "read_only": true,
+    "default_host": "127.0.0.1",
+    "default_port": 5173,
+    "api_proxy_target": "http://127.0.0.1:8765",
+    "public_deployment_approved": false
+  },
+  "data_source": {
+    "source_type": "local_read_only_api_only",
+    "allowed_base_path": "/api/v1",
+    "direct_file_reading_allowed": false,
+    "pipeline_execution_allowed": false
+  },
+  "primary_score_contract": {
+    "displayed_score": "Deterministic PWS",
+    "source_field": "current_state.primary_pws",
+    "required_score_type": "deterministic",
+    "must_be_main_visual_score": true
+  },
+  "optional_assisted_score_contract": {
+    "display_name": "Optional LLM-assisted variant",
+    "source_field": "current_state.optional_assisted_pws",
+    "visible_only_when_available": true,
+    "must_not_replace_primary": true
+  },
+  "external_assisted_score_contract": {
+    "display_name": "External OpenAI comparison variant",
+    "source_field": "current_state.external_assisted_pws",
+    "visible_only_when_available": true,
+    "must_not_replace_primary": true,
+    "must_not_replace_local_llm_variant": true,
+    "browser_calls_provider_directly": false
+  },
+  "required_components": [
+    "AppStatusHeader",
+    "PrimaryPwsCard",
+    "OptionalAssistedPwsCard",
+    "ReadinessCard",
+    "PwsComponentsPanel",
+    "DeterministicWeightsPanel",
+    "LoadMetricsPanel",
+    "TimeSeriesPanel",
+    "PwsModelComparisonPanel",
+    "VariableTrendsPanel",
+    "PwsComponentInputsPanel",
+    "DashboardChatPanel",
+    "QualityCoveragePanel"
+  ],
+  "missing_values_policy": "display_missing_as_no_data_never_numeric_zero",
+  "forbidden_features": [
+    "authentication",
+    "user_profile",
+    "garmin_token_management",
+    "pipeline_trigger",
+    "data_upload",
+    "weight_editing",
+    "score_recomputation",
+    "direct_browser_llm_provider_call",
+    "medical_diagnosis",
+    "injury_prediction",
+    "training_recommendation",
+    "coaching_message",
+    "external_tracking",
+    "public_deployment_configuration"
+  ],
+  "time_series_signal_fields": {
+    "source_endpoint": "/api/v1/dashboard/time-series",
+    "presentation_only": true,
+    "fields": [
+      "resting_hr_bpm",
+      "sleep_seconds",
+      "hrv_last_night_avg_ms",
+      "avg_sleep_spo2",
+      "avg_sleep_respiration",
+      "avg_stress",
+      "activity_duration_weighted_average_hr_bpm",
+      "activity_maximum_hr_bpm",
+      "weight_lq",
+      "weight_rec",
+      "weight_cap",
+      "weight_vs",
+      "local_llm_weight_lq",
+      "local_llm_weight_rec",
+      "local_llm_weight_cap",
+      "local_llm_weight_vs",
+      "openai_weight_lq",
+      "openai_weight_rec",
+      "openai_weight_cap",
+      "openai_weight_vs"
+    ],
+    "no_score_recomputation": true
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "policy_version": "pws_components_policy_v1",
+  "parent_policy_reference": "config/pws_policy_v1.json",
+  "source_modules": [
+    "08_compute_load_metrics",
+    "09_compute_readiness"
+  ],
+  "component_score_range": {
+    "minimum": 0,
+    "maximum": 100
+  },
+  "components": {
+    "LQ": {
+      "name": "Load Quality",
+      "output_field": "lq_score",
+      "interpretation": "Quality of current load balance according to configured ACWR heuristic.",
+      "preferred_source_metric": "acwr_ewma",
+      "fallback_source_metric": "acwr_rolling",
+      "context_only_fields": [
+        "monotony_7d",
+        "strain_7d"
+      ]
+    },
+    "REC": {
+      "name": "Recovery",
+      "output_field": "rec_score",
+      "interpretation": "Recovery component directly inherited from deterministic daily readiness.",
+      "source_metric": "readiness_score"
+    },
+    "CAP": {
+      "name": "Capacity",
+      "output_field": "cap_score",
+      "interpretation": "Observed performed-capacity proxy based on recent activity duration relative to the user's prior baseline.",
+      "source_metric": "activity_total_duration_seconds",
+      "recent_window_days": 7,
+      "baseline_window_days": 21,
+      "required_total_window_days": 28
+    },
+    "VS": {
+      "name": "Vital Stability",
+      "output_field": "vs_score",
+      "interpretation": "Stability of available physiological signals relative to the user's recent personal baseline.",
+      "source_metrics": [
+        "resting_hr_bpm",
+        "hrv_last_night_avg_ms",
+        "avg_sleep_spo2",
+        "avg_sleep_respiration"
+      ],
+      "baseline_window_days": 28,
+      "minimum_baseline_observations": 14,
+      "signal_weights": {
+        "rhr_stability": 0.3,
+        "hrv_stability": 0.3,
+        "spo2_stability": 0.2,
+        "respiration_stability": 0.2
+      },
+      "scale_floors": {
+        "resting_hr_bpm": 1.0,
+        "hrv_last_night_avg_ms": 3.0,
+        "avg_sleep_spo2": 1.0,
+        "avg_sleep_respiration": 0.5
+      },
+      "minimum_available_signals": 2,
+      "minimum_available_weight_sum": 0.5
+    }
+  },
+  "missing_values_policy": {
+    "missing_component_output": null,
+    "do_not_replace_missing_with_zero": true,
+    "do_not_compute_final_pws": true
+  },
+  "known_overlap_disclosure": {
+    "LQ_and_REC": "REC may already include a small load-balance contribution through readiness. This overlap must remain visible for the later weighting module.",
+    "REC_and_VS": "REC and VS may use related physiological signals, but REC represents readiness scoring while VS represents baseline stability.",
+    "handling_policy": "report_overlap_only_do_not_resolve_in_this_module"
+  },
+  "prohibited_outputs": [
+    "pws_score",
+    "pws_deterministic",
+    "pws_llm_assisted",
+    "pws_weights",
+    "effective_pws_weights",
+    "dynamic_weights",
+    "priority_component",
+    "priority_recommendation",
+    "llm_adjustment",
+    "coach_message"
+  ],
+  "limitations": [
+    "Component scores are heuristic decision-support measures.",
+    "They are not medical diagnoses.",
+    "They are not injury predictions.",
+    "They are not professional training prescriptions.",
+    "Weights and final PWS are intentionally not computed in this module."
+  ]
+}

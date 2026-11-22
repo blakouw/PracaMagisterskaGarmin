@@ -1,0 +1,73 @@
+{
+  "module_id": "07_build_daily_features",
+  "module_name": "Build Daily Features",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Builds a stable base daily feature table by joining normalized daily records with transparent daily activity aggregations, without calculating derived load, readiness or PWS metrics.",
+  "depends_on": [
+    "00_project_contract",
+    "05_normalize_daily_records"
+  ],
+  "optional_inputs_from": [
+    "06_normalize_activities"
+  ],
+  "inputs": [
+    "config/daily_features_policy_v1.json",
+    "data/pipeline/05_normalize_daily_records/daily_records.json",
+    "data/pipeline/05_normalize_daily_records/daily_records_schema.json",
+    "data/pipeline/05_normalize_daily_records/data_quality_report.json",
+    "optional: data/pipeline/06_normalize_activities/activities_normalized.json",
+    "optional: data/pipeline/06_normalize_activities/activities_by_date.json",
+    "optional: data/pipeline/06_normalize_activities/activity_schema.json",
+    "optional: data/pipeline/06_normalize_activities/activity_data_quality_report.json"
+  ],
+  "outputs": [
+    "data/pipeline/07_build_daily_features/daily_features.json",
+    "data/pipeline/07_build_daily_features/daily_features.csv",
+    "optional: data/pipeline/07_build_daily_features/daily_features.parquet",
+    "data/pipeline/07_build_daily_features/daily_features_schema.json",
+    "data/pipeline/07_build_daily_features/daily_features_quality_report.json",
+    "data/pipeline/07_build_daily_features/daily_features_lineage.json",
+    "data/pipeline/07_build_daily_features/run_manifest.json",
+    "data/pipeline/07_build_daily_features/run_log.txt",
+    "data/pipeline/07_build_daily_features/errors.json"
+  ],
+  "run_command": "pipeline/07_build_daily_features/run.bat",
+  "artifact_directory": "data/pipeline/07_build_daily_features",
+  "test_directory": "tests/07_build_daily_features",
+  "visualization_directory": "visualization/07_build_daily_features",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "trim_workbook",
+    "download_garmin_api_data",
+    "normalize_daily_records",
+    "normalize_activities",
+    "parse_fit_files",
+    "parse_tcx_files",
+    "calculate_rhr_delta",
+    "calculate_ln_rmssd",
+    "calculate_load_metrics",
+    "calculate_acute_load",
+    "calculate_chronic_load",
+    "calculate_acwr",
+    "calculate_ewma",
+    "calculate_monotony",
+    "calculate_strain",
+    "calculate_readiness",
+    "calculate_pws",
+    "call_llm",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_activity_and_training_data",
+  "notes": [
+    "The output table contains private health and activity data and must remain local.",
+    "Feature table dates are sourced exclusively from module 05 daily records.",
+    "Activity counts and direct aggregations are permitted; derived load, readiness and PWS metrics are forbidden.",
+    "Missing physiological values remain null and are never replaced with zero."
+  ]
+}

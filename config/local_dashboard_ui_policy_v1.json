@@ -1,0 +1,198 @@
+{
+  "policy_version": "local_dashboard_ui_policy_v1",
+  "purpose": "Render a local wellness dashboard and local LLM conversation panel from the local dashboard API without recomputing, modifying or uploading analytical data.",
+  "source_api": {
+    "module": "17_local_api_server",
+    "base_path": "/api/v1",
+    "runtime_origin_policy": "same_origin_relative_requests_with_local_development_proxy",
+    "development_proxy_target": "http://127.0.0.1:8765",
+    "allowed_endpoints": [
+      "/api/v1/health",
+      "/api/v1/snapshot/status",
+      "/api/v1/dashboard/current-state",
+      "/api/v1/dashboard/time-series",
+      "/api/v1/dashboard/quality",
+      "/api/v1/dashboard/disclosures",
+      "/api/v1/dashboard/chat"
+    ],
+    "forbidden_direct_sources": [
+      "data/pipeline",
+      "data/published",
+      "raw_garmin_files",
+      "raw_workbooks",
+      "tokens",
+      "credentials"
+    ],
+    "allowed_post_endpoints": [
+      "/api/v1/dashboard/chat"
+    ],
+    "chat_endpoint_policy": {
+      "local_only": true,
+      "ephemeral": true,
+      "must_not_modify_snapshot": true,
+      "must_not_trigger_pipeline": true,
+      "must_not_recompute_scores": true,
+      "browser_must_not_call_llm_provider_directly": true
+    }
+  },
+  "runtime": {
+    "local_only": true,
+    "read_only": true,
+    "frontend_default_host": "127.0.0.1",
+    "frontend_default_port": 5173,
+    "api_expected_host": "127.0.0.1",
+    "api_expected_port": 8765,
+    "public_deployment_approved": false,
+    "lan_exposure_approved": false
+  },
+  "stack_policy": {
+    "reuse_existing_frontend_stack_when_present": true,
+    "default_stack_when_absent": {
+      "bundler": "vite",
+      "ui_library": "react",
+      "language": "typescript",
+      "test_runner": "vitest",
+      "component_testing": "react_testing_library"
+    },
+    "avoid_unnecessary_frameworks": true
+  },
+  "presentation_policy": {
+    "primary_score": {
+      "source_field": "current_state.primary_pws",
+      "required_score_type": "deterministic",
+      "display_name": "Deterministic PWS",
+      "must_be_main_visual_score": true
+    },
+    "optional_assisted_score": {
+      "source_field": "current_state.optional_assisted_pws",
+      "display_only_when_available": true,
+      "display_name": "Optional LLM-assisted variant",
+      "must_not_replace_primary_score": true,
+      "must_display_separate_variant_disclosure": true
+    },
+    "external_assisted_score": {
+      "source_field": "current_state.external_assisted_pws",
+      "display_only_when_available": true,
+      "display_name": "Zewnętrzny model OpenAI",
+      "must_not_replace_primary_score": true,
+      "must_not_replace_local_llm_variant": true,
+      "must_display_provider_and_model": true
+    },
+    "missing_values": {
+      "preserve_null": true,
+      "display_null_as": "No data",
+      "must_not_display_null_as_numeric_zero": true
+    },
+    "coverage": {
+      "display_coverage_tier": true,
+      "display_missing_components": true,
+      "display_partial_coverage_warning": true,
+      "display_insufficient_coverage_state": true
+    }
+  },
+  "required_dashboard_sections": [
+    "app_status_header",
+    "primary_pws_card",
+    "optional_assisted_pws_card",
+    "readiness_card",
+    "pws_components_panel",
+    "deterministic_weights_panel",
+    "load_metrics_panel",
+    "time_series_panel",
+    "pws_model_comparison_panel",
+    "quality_and_coverage_panel"
+  ],
+  "time_series_policy": {
+    "data_source_endpoint": "/api/v1/dashboard/time-series",
+    "default_view_days": 30,
+    "allowed_user_views_days": [
+      7,
+      30,
+      90,
+      "all"
+    ],
+    "allowed_series": [
+      "pws_deterministic",
+      "readiness_score",
+      "lq_score",
+      "rec_score",
+      "cap_score",
+      "vs_score",
+      "optional_assisted_pws",
+      "external_assisted_pws",
+      "weight_lq",
+      "weight_rec",
+      "weight_cap",
+      "weight_vs",
+      "local_llm_weight_lq",
+      "local_llm_weight_rec",
+      "local_llm_weight_cap",
+      "local_llm_weight_vs",
+      "openai_weight_lq",
+      "openai_weight_rec",
+      "openai_weight_cap",
+      "openai_weight_vs"
+    ],
+    "presentation_filtering_only": true,
+    "no_interpolation": true,
+    "no_recalculation": true,
+    "no_forecasting": true
+  },
+  "user_interaction_policy": {
+    "allowed_interactions": [
+      "select_time_range",
+      "toggle_visible_series",
+      "inspect_point_values",
+      "send_local_dashboard_chat_message"
+    ],
+    "forbidden_interactions": [
+      "run_pipeline",
+      "refresh_from_garmin",
+      "edit_score",
+      "edit_weight",
+      "request_recommendation",
+      "save_profile",
+      "authenticate",
+      "upload_data",
+      "download_raw_private_source",
+      "apply_llm_adjustment_to_scores"
+    ]
+  },
+  "safety_and_privacy_policy": {
+    "private_local_dashboard": true,
+    "must_not_send_analytics_or_telemetry": true,
+    "must_not_include_external_tracking": true,
+    "must_not_include_remote_fonts_or_remote_assets_without_approval": true,
+    "must_not_store_private_api_payloads_in_browser_persistent_storage": true,
+    "must_not_display_tokens_or_secrets": true
+  },
+  "prohibited_responsibilities": [
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "recompute_pws_components",
+    "recompute_pws_weights",
+    "recompute_pws_deterministic",
+    "recompute_pws_llm_assisted",
+    "trigger_pipeline",
+    "publish_snapshot",
+    "implement_write_api",
+    "implement_authentication",
+    "implement_user_profile",
+    "implement_garmin_token_pipeline",
+    "generate_coaching",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "implement_public_deployment",
+    "call_llm_directly_from_browser",
+    "call_llm_for_recomputing_scores"
+  ],
+  "limitations": [
+    "This dashboard is a local presentation interface for previously calculated data only.",
+    "Deterministic PWS is the primary score.",
+    "Local and external LLM-assisted PWS values are separate comparison variants only.",
+    "PWS and readiness are heuristic decision-support indicators and are not medical diagnoses, injury predictions or professional training prescriptions.",
+    "Missing values remain unavailable and are never represented as numeric zero.",
+    "A local chat panel may ask the local API chat endpoint to explain already computed dashboard data; it must not modify data or generate prescriptions."
+  ]
+}

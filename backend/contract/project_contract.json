@@ -1,0 +1,32 @@
+{
+  "module_id": "00_project_contract",
+  "module_name": "Project Contract",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Defines and validates the modular pipeline architecture, project structure, contracts and public configuration policies.",
+  "depends_on": [],
+  "inputs": [],
+  "outputs": [
+    "data/pipeline/00_project_contract/project_manifest.json",
+    "data/pipeline/00_project_contract/pipeline_registry_snapshot.json",
+    "data/pipeline/00_project_contract/run_manifest.json",
+    "data/pipeline/00_project_contract/run_log.txt",
+    "data/pipeline/00_project_contract/errors.json"
+  ],
+  "run_command": "pipeline/00_project_contract/run.bat",
+  "artifact_directory": "data/pipeline/00_project_contract",
+  "test_directory": "tests/00_project_contract",
+  "visualization_directory": "visualization/00_project_contract",
+  "prohibited_responsibilities": [
+    "read_garmin_workbook",
+    "fetch_garmin_api_data",
+    "calculate_metrics",
+    "calculate_pws",
+    "call_llm",
+    "implement_api_server",
+    "implement_ui"
+  ],
+  "data_sensitivity": "public_configuration",
+  "notes": []
+}

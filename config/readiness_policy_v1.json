@@ -1,0 +1,185 @@
+{
+  "policy_version": "readiness_policy_v1",
+  "source_module": "08_compute_load_metrics",
+  "score_name": "readiness_score",
+  "score_range": {
+    "minimum": 0,
+    "maximum": 100
+  },
+  "interpretation": "short_term_daily_training_readiness_decision_support_indicator",
+  "limitations": [
+    "Readiness is not a medical diagnosis.",
+    "Readiness is not an injury prediction.",
+    "Readiness is not a professional training prescription.",
+    "Readiness is computed only from available configured signals and must expose data coverage."
+  ],
+  "components": {
+    "hrv": {
+      "output_field": "hrv_readiness_score",
+      "base_weight": 0.36363636363636365,
+      "required_input_alternatives": [
+        [
+          "hrv_last_night_avg_ms",
+          "hrv_baseline_balanced_low_ms",
+          "hrv_baseline_balanced_upper_ms"
+        ],
+        [
+          "hrv_last_night_avg_ms",
+          "hrv_weekly_avg_ms"
+        ]
+      ]
+    },
+    "stress": {
+      "output_field": "stress_readiness_score",
+      "base_weight": 0.2727272727272727,
+      "required_input_alternatives": [
+        "avg_stress"
+      ]
+    },
+    "rhr": {
+      "output_field": "rhr_readiness_score",
+      "base_weight": 0.18181818181818182,
+      "required_input_alternatives": [
+        [
+          "resting_hr_bpm",
+          "resting_hr_baseline_bpm"
+        ]
+      ]
+    },
+    "load_balance": {
+      "output_field": "load_balance_readiness_score",
+      "base_weight": 0.18181818181818182,
+      "required_input_alternatives": [
+        "acwr_ewma",
+        "acwr_rolling"
+      ]
+    }
+  },
+  "base_weights": {
+    "hrv": 0.36363636363636365,
+    "stress": 0.2727272727272727,
+    "rhr": 0.18181818181818182,
+    "load_balance": 0.18181818181818182
+  },
+  "weights_must_sum_to": 1.0,
+  "missing_component_policy": {
+    "missing_component_score": null,
+    "do_not_substitute_zero": true,
+    "renormalize_available_component_weights": true,
+    "minimum_available_base_weight_sum_for_final_score": 0.5,
+    "minimum_available_components_for_final_score": 3,
+    "insufficient_data_score": null,
+    "insufficient_data_label": "insufficient_data"
+  },
+  "hrv_component": {
+    "preferred_method": "baseline_band",
+    "baseline_band_rule": {
+      "condition_balanced": "baseline_low <= last_night_avg <= baseline_upper",
+      "balanced_score": 100,
+      "below_baseline_formula": "100 * last_night_avg / baseline_low",
+      "above_baseline_formula": "max(70, 100 - ((last_night_avg - baseline_upper) / baseline_upper) * 100)"
+    },
+    "fallback_method": "relative_to_weekly_average",
+    "fallback_formula": "100 * last_night_avg / weekly_avg",
+    "fallback_clip_result_to_range": [
+      0,
+      100
+    ],
+    "rule": "Use the baseline band when all baseline fields are available and valid. Otherwise use nightly HRV relative to weekly average when both values are valid and weekly average is greater than zero.",
+    "clip_result_to_range": [
+      0,
+      100
+    ]
+  },
+  "stress_component": {
+    "source_field": "avg_stress",
+    "formula": "clip(100 - avg_stress, 0, 100)",
+    "rule": "Lower average stress produces a higher readiness component."
+  },
+  "rhr_component": {
+    "source_fields": [
+      "resting_hr_bpm",
+      "resting_hr_baseline_bpm"
+    ],
+    "delta_definition": "resting_hr_bpm - resting_hr_baseline_bpm",
+    "formula": "clip(100 - max(0, delta_definition) * 8, 0, 100)",
+    "rule": "Resting heart rate at or below baseline receives full score. Elevation above baseline reduces the component by 8 points per bpm.",
+    "important_scope_note": "The delta is calculated only as an internal intermediate for this component and must not be promoted as a standalone analytical feature outside readiness outputs."
+  },
+  "load_balance_component": {
+    "preferred_source": "acwr_ewma",
+    "fallback_source": "acwr_rolling",
+    "rule": "Use acwr_ewma when available; otherwise use acwr_rolling. Do not calculate a new ACWR in this module.",
+    "piecewise_score": [
+      {
+        "condition": "value < 0.8",
+        "formula": "max(40, 100 - ((0.8 - value) / 0.8) * 60)"
+      },
+      {
+        "condition": "0.8 <= value <= 1.3",
+        "formula": "100"
+      },
+      {
+        "condition": "1.3 < value <= 1.5",
+        "formula": "100 - ((value - 1.3) / 0.2) * 40"
+      },
+      {
+        "condition": "value > 1.5",
+        "formula": "max(0, 60 - ((value - 1.5) / 0.5) * 60)"
+      }
+    ],
+    "clip_result_to_range": [
+      0,
+      100
+    ],
+    "safety_note": "This is a heuristic load-balance contribution, not an injury-risk prediction."
+  },
+  "final_score": {
+    "formula": "sum(component_score * normalized_available_weight for available components only)",
+    "rounding_decimal_places": 2,
+    "store_base_weights": true,
+    "store_effective_weights": true,
+    "store_component_contributions": true
+  },
+  "labels": [
+    {
+      "label_id": "low",
+      "label": "niska",
+      "condition": "0 <= readiness_score < 40"
+    },
+    {
+      "label_id": "reduced",
+      "label": "obnizona",
+      "condition": "40 <= readiness_score < 60"
+    },
+    {
+      "label_id": "moderate",
+      "label": "umiarkowana",
+      "condition": "60 <= readiness_score < 80"
+    },
+    {
+      "label_id": "high",
+      "label": "wysoka",
+      "condition": "80 <= readiness_score <= 100"
+    }
+  ],
+  "prohibited_calculations": [
+    "LQ",
+    "REC",
+    "CAP",
+    "VS",
+    "pws_weights",
+    "pws_score",
+    "pws_priority",
+    "llm_adjustments",
+    "medical_diagnosis",
+    "injury_prediction",
+    "training_prescription"
+  ],
+  "notes": [
+    "Missing components remain null and are not treated as zero.",
+    "Final readiness is computed only when minimum component availability rules are satisfied.",
+    "Readiness is a short-term daily indicator and is not the same as PWS.",
+    "The later REC component may use readiness as an input, but REC is not implemented here."
+  ]
+}

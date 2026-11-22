@@ -1,0 +1,71 @@
+{
+  "module_id": "10_compute_pws_components",
+  "module_name": "Compute PWS Components",
+  "version": "1.0.0",
+  "status": "implemented",
+  "optional": false,
+  "responsibility": "Computes the four auditable Personal Wellness Score components LQ, REC, CAP and VS from existing load and readiness artifacts, without calculating component weights, final PWS or LLM-based adjustments.",
+  "depends_on": [
+    "00_project_contract",
+    "07_build_daily_features",
+    "08_compute_load_metrics",
+    "09_compute_readiness"
+  ],
+  "optional_inputs_from": [],
+  "inputs": [
+    "config/pws_components_policy_v1.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_schema.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_quality_report.json",
+    "data/pipeline/08_compute_load_metrics/load_metrics_lineage.json",
+    "data/pipeline/09_compute_readiness/readiness.json",
+    "data/pipeline/09_compute_readiness/readiness_schema.json",
+    "data/pipeline/09_compute_readiness/readiness_quality_report.json",
+    "data/pipeline/09_compute_readiness/readiness_lineage.json"
+  ],
+  "outputs": [
+    "data/pipeline/10_compute_pws_components/pws_components.json",
+    "data/pipeline/10_compute_pws_components/pws_components.csv",
+    "optional: data/pipeline/10_compute_pws_components/pws_components.parquet",
+    "data/pipeline/10_compute_pws_components/pws_components_schema.json",
+    "data/pipeline/10_compute_pws_components/pws_components_quality_report.json",
+    "data/pipeline/10_compute_pws_components/pws_components_lineage.json",
+    "data/pipeline/10_compute_pws_components/run_manifest.json",
+    "data/pipeline/10_compute_pws_components/run_log.txt",
+    "data/pipeline/10_compute_pws_components/errors.json"
+  ],
+  "run_command": "pipeline/10_compute_pws_components/run.bat",
+  "artifact_directory": "data/pipeline/10_compute_pws_components",
+  "test_directory": "tests/10_compute_pws_components",
+  "visualization_directory": "visualization/10_compute_pws_components",
+  "prohibited_responsibilities": [
+    "find_input_workbook",
+    "parse_xlsx_zip_xml",
+    "trim_workbook",
+    "download_garmin_api_data",
+    "normalize_daily_records",
+    "normalize_activities",
+    "build_base_daily_features",
+    "recompute_load_metrics",
+    "recompute_readiness",
+    "calculate_pws_weights",
+    "calculate_dynamic_pws_weights",
+    "calculate_final_pws",
+    "call_llm",
+    "apply_llm_weight_adjustment",
+    "generate_medical_diagnosis",
+    "predict_injury",
+    "generate_training_prescription",
+    "build_dashboard_payload",
+    "implement_api_server",
+    "implement_ui",
+    "depend_on_previous_project_runtime"
+  ],
+  "data_sensitivity": "private_health_activity_and_training_data",
+  "notes": [
+    "The module produces component scores only. It must not calculate final PWS.",
+    "Missing component values remain null and must not be replaced with zero.",
+    "Known overlap between LQ, REC and VS signals must be disclosed for later weighting.",
+    "Component outputs are heuristic decision-support indicators, not diagnoses or prescriptions."
+  ]
+}

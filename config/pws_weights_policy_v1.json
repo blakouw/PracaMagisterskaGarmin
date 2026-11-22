@@ -1,0 +1,265 @@
+{
+  "policy_version": "pws_weights_policy_v1",
+  "parent_policy_reference": "config/pws_policy_v1.json",
+  "source_module": "10_compute_pws_components",
+  "component_score_range": {
+    "minimum": 0,
+    "maximum": 100
+  },
+  "components": {
+    "LQ": {
+      "score_field": "lq_score",
+      "status_field": "lq_status",
+      "base_weight": 0.2,
+      "interpretation": "Load Quality"
+    },
+    "REC": {
+      "score_field": "rec_score",
+      "status_field": "rec_status",
+      "base_weight": 0.35,
+      "interpretation": "Recovery"
+    },
+    "CAP": {
+      "score_field": "cap_score",
+      "status_field": "cap_status",
+      "base_weight": 0.15,
+      "interpretation": "Capacity"
+    },
+    "VS": {
+      "score_field": "vs_score",
+      "status_field": "vs_status",
+      "base_weight": 0.3,
+      "interpretation": "Vital Stability"
+    }
+  },
+  "base_weights": {
+    "LQ": 0.2,
+    "REC": 0.35,
+    "CAP": 0.15,
+    "VS": 0.3
+  },
+  "base_weights_must_sum_to": 1.0,
+  "design_rationale": [
+    "PWS is a wellness-oriented indicator rather than a volume-performance ranking.",
+    "Recovery receives the highest base weight.",
+    "Vital Stability receives a high base weight because physiological stability is central to wellness.",
+    "Load Quality contributes meaningfully without dominating recovery signals.",
+    "Capacity receives the lowest base weight because duration-based performed capacity is a limited proxy and must not reward excessive activity."
+  ],
+  "component_availability_policy": {
+    "component_available_when": "component score is a valid numeric value in range 0 to 100 and component status indicates a computed result",
+    "missing_component_score": null,
+    "missing_component_effective_weight": 0,
+    "missing_component_weight_meaning": "excluded_from_weighted_calculation_not_zero_quality",
+    "renormalize_base_weights_across_available_components": true
+  },
+  "eligibility_for_future_final_pws": {
+    "minimum_available_components": 3,
+    "minimum_available_base_weight_sum": 0.65,
+    "must_include_at_least_one_component_from": [
+      "REC",
+      "VS"
+    ],
+    "failure_result": "weights_not_ready_for_final_pws",
+    "important_note": "This module still does not calculate final PWS even when eligibility is satisfied."
+  },
+  "deterministic_adjustment": {
+    "enabled": true,
+    "calculation_order": [
+      "identify_available_components",
+      "calculate_available_base_weight_sum",
+      "calculate_base_available_weights",
+      "check_future_pws_eligibility",
+      "calculate_reliability_factors",
+      "calculate_urgency_factors",
+      "calculate_raw_deterministic_weights",
+      "normalize_raw_weights",
+      "limit_absolute_deterministic_movement",
+      "apply_overlap_controls_when_feasible",
+      "renormalize_and_validate_final_deterministic_weights"
+    ],
+    "reliability_factors": {
+      "LQ": {
+        "method": "source_metric_reliability",
+        "rules": [
+          {
+            "condition": "lq_source_metric == 'acwr_ewma'",
+            "factor": 1.0
+          },
+          {
+            "condition": "lq_source_metric == 'acwr_rolling'",
+            "factor": 0.85
+          }
+        ],
+        "fallback_factor_when_score_available_but_source_unknown": 0.75
+      },
+      "REC": {
+        "method": "readiness_coverage_reliability",
+        "source_field": "rec_source_coverage_ratio",
+        "formula": "clip(rec_source_coverage_ratio, 0.50, 1.00)",
+        "fallback_factor_when_score_available_but_coverage_unknown": 0.75
+      },
+      "CAP": {
+        "method": "computed_complete_window_reliability",
+        "rules": [
+          {
+            "condition": "cap_status == 'computed' and cap_window_complete == true",
+            "factor": 1.0
+          }
+        ],
+        "fallback_factor_when_score_available_but_window_metadata_unknown": 0.75
+      },
+      "VS": {
+        "method": "vital_signal_coverage_reliability",
+        "source_field": "vs_coverage_ratio",
+        "formula": "clip(vs_coverage_ratio, 0.50, 1.00)",
+        "fallback_factor_when_score_available_but_coverage_unknown": 0.75
+      }
+    },
+    "urgency_factor": {
+      "target_component_score": 80,
+      "sensitivity": 0.5,
+      "formula": "1 + sensitivity * max(0, (target_component_score - component_score) / target_component_score)",
+      "minimum_factor": 1.0,
+      "maximum_factor": 1.5,
+      "interpretation": "A weaker available component may receive moderately more attention, but cannot dominate weights without limits."
+    },
+    "raw_weight_formula": "base_available_weight * reliability_factor * urgency_factor",
+    "normalization_formula": "raw_weight / sum(raw_weights_for_available_components)",
+    "movement_limits": {
+      "maximum_absolute_change_from_base_available_weight_per_component": 0.07,
+      "maximum_total_absolute_change_across_all_components": 0.2,
+      "movement_limit_application": "clip candidate shifts and redistribute residual deterministically among available components while preserving sum equal to one"
+    }
+  },
+  "overlap_controls": {
+    "known_overlaps": [
+      {
+        "overlap_id": "LQ_REC_load_balance_overlap",
+        "components": [
+          "LQ",
+          "REC"
+        ],
+        "reason": "REC may already include an ACWR-based load-balance contribution through readiness."
+      },
+      {
+        "overlap_id": "REC_VS_recovery_vital_overlap",
+        "components": [
+          "REC",
+          "VS"
+        ],
+        "reason": "REC and VS may both include HRV and RHR-derived information under different interpretations."
+      }
+    ],
+    "full_component_availability_caps": [
+      {
+        "components": [
+          "LQ",
+          "REC"
+        ],
+        "maximum_combined_effective_weight": 0.55,
+        "apply_only_when_all_components_available": true,
+        "excess_redistribution_targets": [
+          "CAP",
+          "VS"
+        ]
+      },
+      {
+        "components": [
+          "REC",
+          "VS"
+        ],
+        "maximum_combined_effective_weight": 0.65,
+        "apply_only_when_all_components_available": true,
+        "excess_redistribution_targets": [
+          "LQ",
+          "CAP"
+        ]
+      }
+    ],
+    "partial_component_availability_policy": "disclose_overlap_but_do_not_force_infeasible_pair_caps_when_components_are_missing",
+    "important_note": "Overlap controls limit combined influence of overlapping signals when redistribution is feasible. They do not remove components or change component scores."
+  },
+  "future_llm_adjustment_guardrails": {
+    "enabled_for_future_module": true,
+    "this_module_must_not_call_llm": true,
+    "input_weight_basis": "deterministic_effective_weights",
+    "llm_may_only_propose_adjustments_when": [
+      "weights_ready_for_final_pws == true",
+      "deterministic_effective_weights exist",
+      "all proposed component targets are available components"
+    ],
+    "allowed_llm_role": "propose_evidence_proportional_explainable_reprioritization_within_hard_constraints",
+    "forbidden_llm_roles": [
+      "calculate_component_scores",
+      "replace_deterministic_weights_without_audit",
+      "assign_weight_to_unavailable_component",
+      "override_insufficient_data_status",
+      "bypass_overlap_controls",
+      "produce_medical_diagnosis",
+      "predict_injury",
+      "produce_unbounded_training_prescription",
+      "write_final_pws_without_validation"
+    ],
+    "adjustment_limits": {
+      "maximum_absolute_delta_per_component": 0.2,
+      "maximum_total_positive_weight_shift": 0.2,
+      "maximum_total_absolute_delta": 0.4,
+      "weights_must_sum_to": 1.0,
+      "no_negative_weights": true,
+      "unavailable_component_weight_must_remain_zero": true
+    },
+    "hard_constraints_after_llm_adjustment": {
+      "must_preserve_component_availability": true,
+      "must_preserve_pws_eligibility_status": true,
+      "must_reapply_overlap_controls": true,
+      "must_validate_sum_to_one": true,
+      "must_store_deterministic_weights_unchanged": true,
+      "must_store_llm_proposal_separately": true,
+      "must_store_adjustment_reason": true,
+      "must_store_validation_result": true
+    },
+    "structured_context_allowed_for_future_llm": [
+      "date",
+      "available component names",
+      "component scores",
+      "component statuses",
+      "component coverage ratios",
+      "deterministic weights",
+      "known overlap disclosures",
+      "bounded user goal context if explicitly provided in future workflow"
+    ],
+    "raw_private_data_policy": "Future LLM integration should receive only the minimum structured context required for bounded weight reasoning unless a later approved policy explicitly permits more.",
+    "important_note": "The deterministic PWS path must remain available independently of any LLM-assisted path."
+  },
+  "missing_values_policy": {
+    "missing_component_score": null,
+    "missing_weight_output_for_unavailable_component": 0,
+    "do_not_treat_missing_score_as_zero": true,
+    "do_not_calculate_future_final_pws_when_eligibility_fails": true
+  },
+  "output_rounding": {
+    "internal_calculations": "full_precision",
+    "serialized_weight_decimal_places": 6,
+    "serialized_factor_decimal_places": 6
+  },
+  "prohibited_outputs": [
+    "pws_score",
+    "pws_deterministic",
+    "pws_llm_assisted",
+    "llm_adjusted_weights",
+    "llm_adjustment_applied",
+    "priority_recommendation",
+    "coach_message",
+    "training_recommendation",
+    "medical_diagnosis",
+    "injury_prediction"
+  ],
+  "limitations": [
+    "Weights are deterministic decision-support parameters and are not medical advice.",
+    "Low component scores may increase attention weight only within configured limits.",
+    "Reliability factors reduce the influence of partially supported component scores.",
+    "Known overlap controls reduce double-counting risk but do not fully eliminate model dependence.",
+    "Future LLM influence is limited to bounded, separately validated proposals and is not executed in this module."
+  ]
+}
